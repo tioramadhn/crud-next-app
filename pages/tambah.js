@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default function tambah() {
+export default function Tambah() {
   return (
     <div>tambah</div>
   )

@@ -19,7 +19,7 @@ const Item = styled(Paper)(({ theme }) => ({
 
 const fetcher = (...args) => fetch(...args).then(res => res.json())
 
-export default function detail() {
+export default function Detail() {
     const [person, setPerson] = useState()
     const router = useRouter()
 
