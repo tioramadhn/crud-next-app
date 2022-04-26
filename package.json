@@ -9,17 +9,18 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@emotion/react": "^11.8.1",
+    "@date-io/moment": "^2.13.1",
+    "@emotion/react": "^11.9.0",
     "@emotion/styled": "^11.8.1",
-    "@mui/icons-material": "^5.4.2",
-    "@mui/material": "^5.4.3",
-    "@mui/styled-engine-sc": "^5.4.2",
-    "mongoose": "^6.2.3",
-    "next": "12.1.0",
-    "react": "17.0.2",
-    "react-dom": "17.0.2",
-    "styled-components": "^5.3.3",
-    "swr": "^1.2.2"
+    "@mui/icons-material": "^5.6.2",
+    "@mui/material": "^5.6.2",
+    "@mui/x-date-pickers": "^5.0.0-alpha.1",
+    "firebase": "^9.6.11",
+    "moment": "^2.29.3",
+    "next": "12.1.5",
+    "react": "18.0.0",
+    "react-dom": "18.0.0",
+    "react-firebase-hooks": "^5.0.3"
   },
   "devDependencies": {
     "eslint": "8.9.0",

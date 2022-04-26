@@ -1,44 +1,45 @@
-import { Button, Divider, Stack, Typography } from '@mui/material';
-import CustomTable from '../components/CustomTable';
-import PersonAddAlt1SharpIcon from '@mui/icons-material/PersonAddAlt1Sharp';
-import { useEffect, useState } from 'react';
-import useSWR from 'swr';
-import { useRouter } from 'next/router'
-
-const fetcher = (...args) => fetch(...args).then(res => res.json())
+import { Button, Container, Grid, IconButton, Stack } from "@mui/material";
+import Head from "next/head";
+import BasicTable from "../components/Table";
+import AddIcon from "@mui/icons-material/Add";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import { useCollection } from "react-firebase-hooks/firestore";
+import { db } from "../firebase/ClientApp";
+import { collection } from "firebase/firestore";
 
 export default function Home() {
-  const router = useRouter()
-  const { data, error } = useSWR('/api/warga', fetcher)
+  const router = useRouter();
+  const [data, setData] = useState([]);
 
-  if (error) return <div>failed to load</div>
-  if (!data) return <div>loading...</div>
+  const [users, usersLoading, usersError] = useCollection(
+    collection(db, "jemaat_users"),
+    {
+      snapshotListenOptions: { includeMetadataChanges: true },
+    }
+  );
 
-  const handleAdd = () => {
-    router.push('/tambah')
-  }
+  useEffect(() => {
+    if (users) {
+      setData(users.docs.map((doc) => doc.data()));
+    }
+  }, [data, users]);
 
   return (
     <div>
-      <Stack
-        direction={{xs: 'column', md:"row"}}
-        justifyContent="space-between"
-        spacing={2}
-        my={3}
-      >
-        <Typography variant="h5">
-          Jemaat BNKP Efrata Pangkalan Kerinci
-          Resort 60 BNKP
-        </Typography>
-        <Button onClick={handleAdd} variant="contained" startIcon={<PersonAddAlt1SharpIcon/>}>
-         Tambah
-        </Button>
-      
-      </Stack>
-      <Divider sx={{ marginBottom: '2em' }} />
-
-      <CustomTable data={data} />
-
-    </div >
-  )
+      <Head>
+        <title>Data Jemaat</title>
+      </Head>
+      <Grid container justifyContent="flex-end" spacing={2} sx={{ p: 4 }}>
+        <Grid item>
+            <Button onClick={() => router.push('/add')} variant="contained" startIcon={<AddIcon />}>
+              Tambah
+            </Button>
+        </Grid>
+        <Grid item xs={12}>
+          <BasicTable rows={data} />
+        </Grid>
+      </Grid>
+    </div>
+  );
 }
