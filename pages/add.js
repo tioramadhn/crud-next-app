@@ -104,11 +104,8 @@ export default function Add() {
   const handleFile = (e) => {
     const key = e.target.name;
     const value = e.target.files[0];
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setPreview(e.target.result);
-    };
-    reader.readAsDataURL(value);
+    console.log('halooo')
+    setPreview(URL.createObjectURL(value))
     setData((prev) => ({ ...prev, [key]: value }));
   };
 
