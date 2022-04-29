@@ -2,11 +2,10 @@ import { Container } from '@mui/material'
 import ButtonAppBar from '../components/Navbar'
 import '../styles/globals.css'
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { red } from '@mui/material/colors';
 
 const theme = createTheme({
   palette: {
-    primary: {
+    secondary: {
       main: '#fff',
       contrastText: 'black',
     },

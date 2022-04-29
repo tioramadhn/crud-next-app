@@ -1,16 +1,10 @@
 import {
-  Button,
-  Container,
   Grid,
-  IconButton,
-  Stack,
   Typography,
 } from "@mui/material";
 import Head from "next/head";
 import { styled } from "@mui/material/styles";
 import Paper from "@mui/material/Paper";
-import { useEffect } from "react";
-import { Chart } from "chart.js";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Doughnut } from "react-chartjs-2";
 import AccessibilityNewIcon from "@mui/icons-material/AccessibilityNew";
@@ -123,7 +117,7 @@ export default function Home() {
           </Item>
         </Grid>
 
-        <Grid item md={4}>
+        <Grid item xs={12} md={4}>
           <Item>
             <Doughnut data={data} />
             <Typography variant="subtitle2" component="h2">
@@ -132,7 +126,7 @@ export default function Home() {
           </Item>
         </Grid>
 
-        <Grid item md={4}>
+        <Grid item xs={12} md={4}>
           <Item>
             <Doughnut data={data} />
             <Typography variant="subtitle2" component="h2">
