@@ -100,7 +100,7 @@ export default function Jemaat() {
         </Grid>
 
         {user ? user.map(item => (
-          <Grid item xs={12} md={6} lg={3} key={user.id}>
+          <Grid item xs={12} md={6} lg={3} key={item.numStambuk}>
           <Item elevation={0}>
             <Stack direction="row" spacing={2} alignItems="center">
               <Avatar
