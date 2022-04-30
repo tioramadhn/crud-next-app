@@ -1,16 +1,13 @@
 import {
-  Avatar,
   Button,
   Divider,
   FormControl,
   FormControlLabel,
   FormLabel,
   Grid,
-  IconButton,
   Radio,
   RadioGroup,
   Stack,
-  styled,
   TextField,
   Typography,
 } from "@mui/material";
@@ -19,75 +16,46 @@ import { useEffect, useState } from "react";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
-import { PhotoCamera } from "@mui/icons-material";
-import { Box } from "@mui/system";
-import {
-  Timestamp,
-  collection,
-  orderBy,
-  limit,
-  query,
-  addDoc,
-  getDocs,
-} from "firebase/firestore";
-import { ref, uploadBytes } from "firebase/storage";
-import { storage } from "../firebase/ClientApp";
-import { useCollection } from "react-firebase-hooks/firestore";
-import { db } from "../firebase/ClientApp";
-import { useRouter } from "next/router";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import { useForm } from "react-hook-form";
 
 export default function Add() {
-  const [data, setData] = useState()
-  const [date, setDate] = useState()
-  const [input, setInput] = useState()
-
-  useEffect(()=> {
-    if(data?.isMarried == 'Kawin'){
-      setInput(prev => (
-        {...prev,
-           dateMarried: data.isMarried
-        }))
-    }else{
-      delete data?.marriedAt
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
+  const onSubmit = (data) => {
+    if (data.isMarried == "Belum Kawin") {
+      delete data.marriedAt;
     }
-
-    if(data?.status){
-      setInput(prev => (
-        {...prev,
-           dateStatus: data.status
-        }))
+    if (data.status == "Aktif") {
+      delete data.moveAt;
+      delete data.deadAt;
+    } else if (data.status == "Pindah") {
+      delete data.deadAt;
+    } else {
+      delete data.moveAt;
     }
-    
-    if(data?.status == 'Aktif'){
-      delete data?.moveAt
-      delete data?.deadAt
-    }else if(data?.status == 'Pindah'){
-      delete data?.deadAt
-    }else if(data?.status == 'Meninggal'){
-      delete data?.moveAt
-    }
-
-    console.log(data)
-  }, [data, date])
-
-  function handleInputChange(event, dateField=null) {
-    if(event.target){
-      const target = event.target;
-      const value = target.value;
-      const name = target.name;
-      setData(prev => ({...prev, [name]: value}));
-    }else{
-      setData(prev => ({...prev, [dateField]: Timestamp.fromDate(event.toDate()).seconds}));
-      setDate(prev => ({...prev, [dateField]: event.toDate()}))
-    }
-   
-  }
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log(e.target);
+    uploadData(data)
+    console.log(data);
   };
+  const [value, setValue] = useState();
+
+  const handleKawin = (e) => {
+    setValue((prev) => ({ ...prev, kawin: e.target.value }));
+  };
+  const handleStatus = (e) => {
+    setValue((prev) => ({ ...prev, status: e.target.value }));
+  };
+
+  const uploadData = (user) => {
+    if(user.foto){
+      console.log(user.foto[0])
+    }
+
+
+  }
 
   return (
     <LocalizationProvider dateAdapter={AdapterMoment}>
@@ -96,7 +64,7 @@ export default function Add() {
       </Head>
       <Grid container justifyContent="center" spacing={2} sx={{ p: 4 }}>
         <Grid item xs={12} md={3}>
-          <Stack spacing={2} component="form"  onSubmit={handleSubmit}>
+          <Stack spacing={2} component="form" onSubmit={handleSubmit(onSubmit)}>
             <Typography
               textAlign={"center"}
               variant="h4"
@@ -110,24 +78,25 @@ export default function Add() {
             <Divider />
 
             <TextField
-              onChange={(e) => handleInputChange(e)}
+              {...register("name", { required: "Nama perlu diisi" })}
+              error={errors.name ? true : false}
+              helperText={errors.name ? errors.name.message : null}
               label="Nama lengkap anda"
-              name="name"
               variant="outlined"
-              required
             />
-
             <FormControl>
               <FormLabel id="demo-row-radio-buttons-group-label">
                 Jenis Kelamin
               </FormLabel>
-              <RadioGroup row name="gender" defaultValue="Perempuan"  onChange={(e) => handleInputChange(e)}>
+              <RadioGroup row defaultValue="Perempuan">
                 <FormControlLabel
+                  {...register("gender")}
                   value="Perempuan"
                   control={<Radio />}
                   label="Perempuan"
                 />
                 <FormControlLabel
+                  {...register("gender")}
                   value="Laki-laki"
                   control={<Radio />}
                   label="Laki-Laki"
@@ -136,68 +105,83 @@ export default function Add() {
             </FormControl>
 
             <TextField
-             onChange={(e) => handleInputChange(e)}
-              required
+              {...register("birthPlace", {
+                required: "Tempat lahir perlu diisi",
+              })}
+              error={errors.birthPlace ? true : false}
+              helperText={errors.birthPlace ? errors.birthPlace.message : null}
               label="Tempat lahir"
-              name="birthPlace"
               variant="outlined"
             />
 
-            <DesktopDatePicker
-            onChange={(e) => handleInputChange(e, 'birthDate')}
-            value={date?.birthDate}
-              label="Tanggal Lahir"
-              name="birthDate"
-              inputFormat="DD/MM/yyyy"
-              renderInput={(params) => <TextField {...params} />}
-            />
-
             <TextField
-             onChange={(e) => handleInputChange(e)}
-              required
+              {...register("birthDate", { required: "isi tanggal lahir" })}
+              error={errors.birthDate ? true : false}
+              helperText={errors.birthDate ? errors.birthDate.message : null}
+              id="date"
+              label="Tanggal lahir"
+              type="date"
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />
+            <TextField
+              {...register("nik", { required: "NIK perlu diisi", valueAsNumber: true })}
+              error={errors.nik ? true : false}
+              helperText={errors.nik ? errors.nik.message : null}
               label="NIK"
-              name="nik"
               variant="outlined"
             />
 
-            <DesktopDatePicker
-            onChange={(e) => handleInputChange(e, 'registerAt')}
-            value={date?.registerAt}
-              label="Tanggal Mendaftar"
-              inputFormat="DD/MM/yyyy"
-              name="registerAt"
-              renderInput={(params) => <TextField {...params} />}
-            />
-            <DesktopDatePicker
-             onChange={(e) => handleInputChange(e, 'baptisAt')}
-             value={date?.baptisAt}
-              label="Tanggal Baptis"
-              inputFormat="DD/MM/yyyy"
-              name="baptisAt"
-              renderInput={(params) => <TextField {...params} />}
-            />
-            <DesktopDatePicker
-             onChange={(e) => handleInputChange(e, 'sidiAt')}
-             value={date?.sidiAt}
-              label="Tanggal Sidi"
-              inputFormat="DD/MM/yyyy"
-              name="sidiAt"
-              renderInput={(params) => <TextField {...params} />}
+            <TextField
+              {...register("registerAt", { required: "Perlu di isi" })}
+              error={errors.registerAt ? true : false}
+              helperText={errors.registerAt ? errors.registerAt.message : null}
+              id="date"
+              label="Tanggal registrasi"
+              type="date"
+              InputLabelProps={{
+                shrink: true,
+              }}
             />
 
             <TextField
-             onChange={(e) => handleInputChange(e)}
-              required
+              {...register("baptisAt", { required: "Perlu di isi" })}
+              error={errors.baptisAt ? true : false}
+              helperText={errors.baptisAt ? errors.baptisAt.message : null}
+              id="date"
+              label="Tanggal baptis"
+              type="date"
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />
+
+            <TextField
+              {...register("sidiAt", { required: "Perlu di isi" })}
+              error={errors.sidiAt ? true : false}
+              helperText={errors.sidiAt ? errors.sidiAt.message : null}
+              id="date"
+              label="Tanggal sidi"
+              type="date"
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />
+
+            <TextField
+              {...register("address", { required: "Alamat perlu diisi" })}
+              error={errors.address ? true : false}
+              helperText={errors.address ? errors.address.message : null}
               label="Alamat"
-              name="address"
               variant="outlined"
             />
 
             <TextField
-             onChange={(e) => handleInputChange(e)}
-              required
+              {...register("sector", { required: "Sector perlu diisi" })}
+              error={errors.sector ? true : false}
+              helperText={errors.sector ? errors.sector.message : null}
               label="Sektor"
-              name="sector"
               variant="outlined"
             />
 
@@ -205,13 +189,15 @@ export default function Add() {
               <FormLabel id="demo-row-radio-buttons-group-label">
                 Status Perkawinan
               </FormLabel>
-              <RadioGroup row name="isMarried" defaultValue="Belum Kawin" onChange={(e) => handleInputChange(e)}>
+              <RadioGroup row defaultValue="Belum Kawin" onChange={handleKawin}>
                 <FormControlLabel
+                  {...register("isMarried")}
                   value="Kawin"
                   control={<Radio />}
                   label="Kawin"
                 />
                 <FormControlLabel
+                  {...register("isMarried")}
                   value="Belum Kawin"
                   control={<Radio />}
                   label="Belum Kawin"
@@ -219,14 +205,17 @@ export default function Add() {
               </RadioGroup>
             </FormControl>
 
-            {input?.dateMarried == 'Kawin' && (
-              <DesktopDatePicker
-              onChange={(e) => handleInputChange(e, 'marriedAt')}
-              value={date?.marriedAt}
-                label="Tanggal Nikah"
-                inputFormat="DD/MM/yyyy"
-                name="marriedAt"
-                renderInput={(params) => <TextField {...params} />}
+            {value?.kawin == "Kawin" && (
+              <TextField
+                {...register("marriedAt", { required: "Perlu di isi" })}
+                error={errors.marriedAt ? true : false}
+                helperText={errors.marriedAt ? errors.marriedAt.message : null}
+                id="date"
+                label="Tanggal menikah"
+                type="date"
+                InputLabelProps={{
+                  shrink: true,
+                }}
               />
             )}
 
@@ -234,18 +223,21 @@ export default function Add() {
               <FormLabel id="demo-row-radio-buttons-group-label">
                 Status Keaktifan
               </FormLabel>
-              <RadioGroup row name="status" defaultValue="Aktif" onChange={(e) => handleInputChange(e)}>
+              <RadioGroup row defaultValue="Aktif" onChange={handleStatus}>
                 <FormControlLabel
+                  {...register("status")}
                   value="Aktif"
                   control={<Radio />}
                   label="Aktif"
                 />
                 <FormControlLabel
+                  {...register("status")}
                   value="Pindah"
                   control={<Radio />}
                   label="Pindah"
                 />
                 <FormControlLabel
+                  {...register("status")}
                   value="Meninggal"
                   control={<Radio />}
                   label="Meninggal"
@@ -253,30 +245,45 @@ export default function Add() {
               </RadioGroup>
             </FormControl>
 
-            {input?.dateStatus == 'Meninggal' && (
-              <DesktopDatePicker
-              onChange={(e) => handleInputChange(e, 'deadAt')}
-              value={date?.deadAt}
-                label="Tanggal Meninggal"
-                inputFormat="DD/MM/yyyy"
-                name="deadAt"
-                renderInput={(params) => <TextField {...params} />}
+            {value?.status == "Meninggal" && (
+              <TextField
+                {...register("deadAt", { required: "Perlu di isi" })}
+                error={errors.deadAt ? true : false}
+                helperText={errors.deadAt ? errors.deadAt.message : null}
+                id="date"
+                label="Tanggal meninggal"
+                type="date"
+                InputLabelProps={{
+                  shrink: true,
+                }}
               />
             )}
-            {input?.dateStatus == 'Pindah'  && (
-              <DesktopDatePicker
-              onChange={(e) => handleInputChange(e, 'moveAt')}
-              value={date?.moveAt}
-                label="Tanggal Pindah"
-                inputFormat="DD/MM/yyyy"
-                name="moveAt"
-                renderInput={(params) => <TextField {...params} />}
+            {value?.status == "Pindah" && (
+              <TextField
+                {...register("moveAt", { required: "Perlu di isi" })}
+                error={errors.moveAt ? true : false}
+                helperText={errors.moveAt ? errors.moveAt.message : null}
+                id="date"
+                label="Tanggal pindah"
+                type="date"
+                InputLabelProps={{
+                  shrink: true,
+                }}
               />
             )}
-            <Button
-              type="submit"
-              variant="contained"
-            >
+
+            <TextField
+              accept="image/*"
+              {...register("foto", {max: 1, validate: e => e[0].size < 1000000})}
+              error={errors.foto ? true : false}
+              helperText={errors.foto ? "File size minimum 1 mb" : null}
+              label="Upload foto"
+              type="file"
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />
+            <Button type="submit" variant="contained">
               Tambah data
             </Button>
           </Stack>
