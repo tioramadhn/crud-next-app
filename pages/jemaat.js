@@ -92,7 +92,7 @@ export default function Jemaat() {
               />
               <Box>
                 <Typography variant="subtitle2">{item.name}</Typography>
-                <Typography variant="subtitle1" x>
+                <Typography variant="subtitle1">
                  Jemaat {item.status}
                 </Typography>
               </Box>
