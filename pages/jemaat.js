@@ -34,23 +34,21 @@ const Item = styled(Paper)(({ theme }) => ({
 
 export default function Jemaat() {
   // collection ref
-  const colRef = collection(db, 'jemaat_users')
+  const colRef = collection(db, "jemaat_users");
   const [user, setUser] = useState();
-  const [q, setQ] = useState(
-    query(colRef))
+  const [q, setQ] = useState(query(colRef));
 
   useEffect(() => {
     // realtime collection data
     onSnapshot(q, (snapshot) => {
-      let data = []
-      snapshot.docs.forEach(doc => {
-        data.push({ ...doc.data(), id: doc.id })
-      })
-      setUser(data)
+      let data = [];
+      snapshot.docs.forEach((doc) => {
+        data.push({ ...doc.data(), id: doc.id });
+      });
+      setUser(data);
     });
   }, [user]);
-  
- 
+
   return (
     <div>
       <Head>
@@ -72,7 +70,7 @@ export default function Jemaat() {
               }}
               variant="outlined"
             />
-            <Link href="/add">
+            <Link href="/add" passHref>
               <Button variant="contained" startIcon={<AddIcon />}>
                 Tambah
               </Button>
@@ -80,27 +78,27 @@ export default function Jemaat() {
           </Stack>
         </Grid>
 
-        {user ? user.map(item => (
-          <Grid item xs={12} md={6} lg={3} key={item.id}>
-          <Item elevation={0}>
-            <Stack direction="row" spacing={2} alignItems="center">
-              <Avatar
-                sx={{ marginRight: "1rem" }}
-                alt="Remy Sharp"
-                src="blank-profile-picture.png"
-                sx={{ width: 48, height: 48 }}
-              />
-              <Box>
-                <Typography variant="subtitle2">{item.name}</Typography>
-                <Typography variant="subtitle1">
-                 Jemaat {item.status}
-                </Typography>
-              </Box>
-            </Stack>
-          </Item>
-        </Grid>
-        )): "loading.."}
-       
+        {user
+          ? user.map((item) => (
+              <Grid item xs={12} md={6} lg={3} key={item.id}>
+                <Item elevation={0}>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <Avatar
+                      alt="Remy Sharp"
+                      src="blank-profile-picture.png"
+                      sx={{ width: 48, height: 48, marginRight: "1rem" }}
+                    />
+                    <Box>
+                      <Typography variant="subtitle2">{item.name}</Typography>
+                      <Typography variant="subtitle1">
+                        Jemaat {item.status}
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </Item>
+              </Grid>
+            ))
+          : "loading.."}
       </Grid>
     </div>
   );
