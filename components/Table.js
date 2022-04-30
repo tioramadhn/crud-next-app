@@ -51,15 +51,15 @@ export default function BasicTable({ rows }) {
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map(({ name, num_stambuk, sector, address }) => (
+          {rows.map(({ name, numStambuk, sector, address }) => (
             <TableRow
-              key={num_stambuk}
+              key={numStambuk}
               sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
             >
               <TableCell component="th" scope="row">
                 {name}
               </TableCell>
-              <TableCell align="right">{num_stambuk}</TableCell>
+              <TableCell align="right">{numStambuk}</TableCell>
               <TableCell align="right">{sector}</TableCell>
               <TableCell align="right">{address}</TableCell>
               <TableCell align="right">

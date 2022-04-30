@@ -18,6 +18,7 @@ import {
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import HomeIcon from '@mui/icons-material/Home';
 import { useRouter } from "next/router";
+import GroupsIcon from '@mui/icons-material/Groups';
 
 export default function ButtonAppBar() {
   const router = useRouter()
@@ -48,6 +49,12 @@ export default function ButtonAppBar() {
             <HomeIcon />
           </ListItemIcon>
           <ListItemText primary={"Beranda"} />
+        </ListItem>
+        <ListItem button onClick={() => router.push('/jemaat')}>
+          <ListItemIcon>
+            <GroupsIcon />
+          </ListItemIcon>
+          <ListItemText primary={"Data Jemaat"} />
         </ListItem>
         <ListItem button onClick={() => router.push('/add')}>
           <ListItemIcon>

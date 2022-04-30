@@ -1,5 +1,7 @@
 import {
+  Backdrop,
   Button,
+  CircularProgress,
   Divider,
   FormControl,
   FormControlLabel,
@@ -9,21 +11,24 @@ import {
   RadioGroup,
   Stack,
   TextField,
-  Typography,
+  Typography,MuiAlert, Snackbar
 } from "@mui/material";
 import Head from "next/head";
-import { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import { useForm } from "react-hook-form";
+import { ref, uploadBytes } from "firebase/storage";
+import { db, storage } from "../firebase/ClientApp";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 
 export default function Add() {
+  const colRef = collection(db, "jemaat_users");
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, reset },
   } = useForm();
   const onSubmit = (data) => {
     if (data.isMarried == "Belum Kawin") {
@@ -38,9 +43,13 @@ export default function Add() {
       delete data.moveAt;
     }
     uploadData(data)
-    console.log(data);
   };
   const [value, setValue] = useState();
+  const [state, setState] = useState({
+    loading: false,
+    success: false,
+    error: false
+  })
 
   const handleKawin = (e) => {
     setValue((prev) => ({ ...prev, kawin: e.target.value }));
@@ -50,18 +59,59 @@ export default function Add() {
   };
 
   const uploadData = (user) => {
+    setState(prev => ({...prev, loading: true}))
     if(user.foto){
-      console.log(user.foto[0])
+      const file = user.foto[0]
+      const path = `efrata_photo/${Date.now()}-${user.name}-${file.name}`
+      user.foto = path
+      const storageRef = ref(storage, path);
+      uploadBytes(storageRef, file)
+        .then((snapshot) => {
+          console.log("Foto sukses di upload");
+        })
+        .catch((err) => {
+          setState(prev => ({...prev, loading: false, error: true}))
+          console.log(err.message)
+        });
     }
-
-
+    addDoc(colRef, {
+      ...user,
+      numStambuk: Date.now()
+    })
+    .then(() => {
+      setState(prev => ({...prev, loading: false, success: true}))
+      console.log('berhasil tambahin data')
+    
+    })
+    .catch((err) => {
+      setState(prev => ({...prev, loading: false, error: true}))
+      console.log(err.message)
+    });
   }
+
+  const handleClose = () => {
+    setState({success: false, loading: false, error: false})
+  };
 
   return (
     <LocalizationProvider dateAdapter={AdapterMoment}>
       <Head>
         <title>Tambah data</title>
       </Head>
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={state.loading}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+      <Snackbar
+        autoHideDuration={3000}
+        anchorOrigin={ {vertical: 'top', horizontal: 'center'} }
+        open={state.error || state.success}
+        onClose={handleClose}
+        message={state.success? "Data berhasil ditambahkan" : 'Data gagal ditambahkan'}
+        key={'top' + 'center'}
+      />
       <Grid container justifyContent="center" spacing={2} sx={{ p: 4 }}>
         <Grid item xs={12} md={3}>
           <Stack spacing={2} component="form" onSubmit={handleSubmit(onSubmit)}>
@@ -126,11 +176,12 @@ export default function Add() {
               }}
             />
             <TextField
-              {...register("nik", { required: "NIK perlu diisi", valueAsNumber: true })}
+              {...register("nik", { required: "NIK perlu diisi", valueAsNumber: "Wajib angka" })}
               error={errors.nik ? true : false}
               helperText={errors.nik ? errors.nik.message : null}
               label="NIK"
               variant="outlined"
+              placeholder="ex: 1405020102011004"
             />
 
             <TextField
@@ -283,7 +334,7 @@ export default function Add() {
                 shrink: true,
               }}
             />
-            <Button type="submit" variant="contained">
+            <Button type="submit" variant="contained" disabled={state.loading? true:false}>
               Tambah data
             </Button>
           </Stack>
