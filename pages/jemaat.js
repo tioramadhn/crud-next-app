@@ -50,26 +50,7 @@ export default function Jemaat() {
     });
   }, [user]);
   
-  const skeleton = new Array(3).map(() => (
-    <Grid item xs={12} md={6} lg={3}>
-    <Item elevation={0}>
-      <Stack direction="row" spacing={2} alignItems="center">
-        <Avatar
-          sx={{ marginRight: "1rem" }}
-          alt="Remy Sharp"
-          src="blank-profile-picture.png"
-          sx={{ width: 48, height: 48 }}
-        />
-        <Box>
-          <Typography variant="subtitle2">Uzumaki Naruto</Typography>
-          <Typography variant="subtitle1" x>
-            Jemaat Aktif
-          </Typography>
-        </Box>
-      </Stack>
-    </Item>
-  </Grid>
-  ))
+ 
   return (
     <div>
       <Head>
