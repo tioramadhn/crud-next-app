@@ -11,6 +11,10 @@ import AccessibilityNewIcon from "@mui/icons-material/AccessibilityNew";
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import CloudOffIcon from '@mui/icons-material/CloudOff';
 import { Box } from "@mui/system";
+import { db } from "../firebase/ClientApp";
+import { useEffect, useState } from "react";
+import { collection, onSnapshot, query } from "firebase/firestore";
+import { getAge } from "../utils/date";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 const Item = styled(Paper)(({ theme }) => ({
@@ -21,23 +25,88 @@ const Item = styled(Paper)(({ theme }) => ({
   color: theme.palette.text.secondary,
 }));
 
-const data = {
-  labels: ["Red", "Blue", "Yellow"],
-  datasets: [
-    {
-      label: "My First Dataset",
-      data: [300, 50, 100],
-      backgroundColor: [
-        "rgb(255, 99, 132)",
-        "rgb(54, 162, 235)",
-        "rgb(255, 205, 86)",
-      ],
-      hoverOffset: 4,
-    },
-  ],
-};
-
 export default function Home() {
+   // collection ref
+   const colRef = collection(db, "jemaat_users");
+   const [user, setUser] = useState();
+   const [q, setQ] = useState(query(colRef));
+   const [size, setSize] = useState({
+     aktif: 0,
+     pindah: 0,
+     meninggal: 0,
+     lakiLaki: 0,
+     perempuan: 0,
+     remaja: 0,
+     anakAnak: 0,
+     dewasa: 0
+   })
+ 
+   useEffect(() => {
+     // realtime collection data
+     onSnapshot(q, (snapshot) => {
+       let data = [];
+       snapshot.docs.forEach((doc) => {
+         data.push({ ...doc.data(), id: doc.id });
+       });
+       setUser(data);
+     });
+
+     if(user){
+       const sizeAktif = user.filter(item => item.status == "Aktif")
+       const sizePindah = user.filter(item => item.status == "Pindah")
+       const sizeMeninggal = user.filter(item => item.status == "Meninggal")
+       const sizeLaki = user.filter(item => item.gender == "Laki-laki")
+       const sizePerempuan = user.filter(item => item.gender == "Perempuan")
+       const sizeAnak = user.filter(item => getAge(item.birthDate) <= 12)
+       const sizeRemaja = user.filter(item => getAge(item.birthDate) > 12 && getAge(item.birthDate) <= 18)
+       const sizeDewasa = user.filter(item =>  getAge(item.birthDate) > 18)
+      //  console.log(sizeAktif.length)
+       setSize(
+         {
+           aktif: sizeAktif.length,
+           pindah: sizePindah.length,
+           meninggal: sizeMeninggal.length,
+           lakiLaki: sizeLaki.length,
+           perempuan: sizePerempuan.length,
+           anakAnak: sizeAnak.length,
+           remaja: sizeRemaja.length,
+           dewasa: sizeDewasa.length
+         })
+     }
+    
+   }, [user, size]);
+
+   const dataJK = {
+    labels: ["Laki-Laki", "Perempuan"],
+    datasets: [
+      {
+        label: "Jenis Kelamin",
+        data: [size.lakiLaki, size.perempuan],
+        backgroundColor: [
+          "rgb(255, 99, 132)",
+          "rgb(54, 162, 235)",
+        ],
+        hoverOffset: 4,
+      },
+    ],
+  };
+  const dataUsia = {
+    labels: ["Anak-anak", "Remaja", "Dewasa"],
+    datasets: [
+      {
+        label: "Usia",
+        data: [size.anakAnak, size.remaja, size.dewasa],
+        backgroundColor: [
+          "rgb(255, 99, 132)",
+          "rgb(54, 162, 235)",
+          "rgb(255, 205, 86)",
+        ],
+        hoverOffset: 4,
+      },
+    ],
+  };
+  
+ 
   return (
     <div>
       <Head>
@@ -56,7 +125,7 @@ export default function Home() {
             <Box sx={{ display: "flex", justifyContent: 'space-between', alignItems: 'center' }}>
               <Box>
                 <Typography variant="h4" component="h2">
-                  2000
+                  {size.aktif}
                 </Typography>
                 <Typography variant="subtitle2" component="h2">
                   Jemaat Aktif
@@ -80,7 +149,7 @@ export default function Home() {
             <Box sx={{ display: "flex", justifyContent: 'space-between', alignItems: 'center' }}>
               <Box>
                 <Typography variant="h4" component="h2">
-                  535
+                {size.pindah}
                 </Typography>
                 <Typography variant="subtitle2" component="h2">
                   Jemaat Pindah
@@ -104,7 +173,7 @@ export default function Home() {
             <Box sx={{ display: "flex", justifyContent: 'space-between', alignItems: 'center' }}>
               <Box>
                 <Typography variant="h4" component="h2">
-                  786
+                {size.meninggal}
                 </Typography>
                 <Typography variant="subtitle2" component="h2">
                   Jemaat Meninggal
@@ -119,7 +188,7 @@ export default function Home() {
 
         <Grid item xs={12} md={4}>
           <Item>
-            <Doughnut data={data} />
+            <Doughnut data={dataJK} />
             <Typography variant="subtitle2" component="h2">
               Jenis Kelamin
             </Typography>
@@ -128,7 +197,7 @@ export default function Home() {
 
         <Grid item xs={12} md={4}>
           <Item>
-            <Doughnut data={data} />
+            <Doughnut data={dataUsia} />
             <Typography variant="subtitle2" component="h2">
               Usia
             </Typography>

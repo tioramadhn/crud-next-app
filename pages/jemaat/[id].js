@@ -13,6 +13,11 @@ import {
   Avatar,
   Backdrop,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Divider,
   Grid,
   InputAdornment,
@@ -33,7 +38,6 @@ const Detail = ({ id }) => {
   const router = useRouter();
   const docRef = doc(db, "jemaat_users", id);
   const [user, setUser] = useState();
-  const [loading, setLoading] = useState(false);
   const [foto, setFoto] = useState();
   const [state, setState] = useState({
     loading: false,
@@ -50,13 +54,14 @@ const Detail = ({ id }) => {
         getDownloadURL(ref(storage, user.foto)).then((url) => {
           setFoto(url);
         });
-      }else{
-        setFoto('blank-profile-picture.png');
+      } else {
+        setFoto("blank-profile-picture.png");
       }
     }
   }, [user]);
 
   const handleDelete = (id) => {
+    setOpen(false);
     setState((prev) => ({ ...prev, loading: true }));
     const docRef = doc(db, "jemaat_users", id);
     deleteDoc(docRef)
@@ -70,13 +75,48 @@ const Detail = ({ id }) => {
   };
 
   const handleClose = () => {
+    setOpen(false);
     setState({ success: false, loading: false, error: false });
   };
+  const [open, setOpen] = useState(false);
+
+  const dataNotSet = (msg) => (
+    <Typography
+      variant="body1"
+      color="error"
+      sx={{ fontStyle: "italic" }}
+      component="div"
+    >
+      {msg}
+    </Typography>
+  );
+
   return (
     <div>
       <Head>
         <title>Detail jemaat</title>
       </Head>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"Apakah anda yakin ingin menghapus ?"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Klik lanjut untuk menghapus data
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>batal</Button>
+          <Button onClick={() => handleDelete(user.id)} autoFocus>
+            lanjut
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Backdrop
         sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
         open={state.loading}
@@ -105,48 +145,139 @@ const Detail = ({ id }) => {
               <CircularProgress />
             )}
           </Grid>
+
           <Grid item xs={12} md={8}>
-            <Stack>
-              <Typography sx={{ textTransform: "capitalize" }} variant="h3">
-                {user.name}
-              </Typography>
-              <Typography variant="subtitle1" component="div">
-                <RoomIcon />
-                {user.address}
-              </Typography>
+            <Typography sx={{ textTransform: "capitalize" }} variant="h3">
+              {user.name}
+            </Typography>
+            <Stack direction="row">
+              <RoomIcon sx={{ width: "1rem" }} />
+              {user.address ? (
+                <Typography variant="subtitle1" component="div">
+                  {user.address}
+                </Typography>
+              ) : (
+                dataNotSet("Data belum ada")
+              )}
             </Stack>
+
             <Divider sx={{ my: 2 }} />
-            <Typography variant="subtitle2" color="primary" component="div">
-              Jemaat {user.status}
-            </Typography>
-            <Typography variant="body1" component="div">
-              {getAge(user.birthDate)} tahun
-            </Typography>
-            <Typography variant="body1" component="div">
-              {user.gender}
-            </Typography>
-            <Typography variant="body1" component="div">
-              {user.birthPlace}, {dateFormatter(user.registerAt)}
-            </Typography>
-            <Typography variant="body1" component="div">
-              {user.isMarried}
-            </Typography>
-            {user.marriedAt && (
-              <Typography variant="body1" component="div">
-                Menikah pada {dateFormatter(user.marriedAt)}
-              </Typography>
-            )}
-            <Typography variant="body1" component="div">
-              Baptis {dateFormatter(user.baptisAt)}
-            </Typography>
-            <Typography variant="body1" component="div">
-              Sidi {dateFormatter(user.sidiAt)}
-            </Typography>
-            <Typography variant="body1" component="div">
-              Sektor {user.sector}
-            </Typography>
+            <Stack direction="row" spacing={4}>
+              <Stack>
+                <Typography variant="body1" component="div">
+                  Keanggotaan
+                </Typography>
+                {user.moveAt && (
+                  <Typography variant="body1" component="div">
+                    Tanggal Pindah
+                  </Typography>
+                )}
+                {user.deadAt && (
+                  <Typography variant="body1" component="div">
+                    Tanggal Meninggal
+                  </Typography>
+                )}
+                <Typography variant="body1" component="div">
+                  Usia
+                </Typography>
+                <Typography variant="body1" component="div">
+                  Jenis Kelamin
+                </Typography>
+                <Typography variant="body1" component="div">
+                  Tempat, Tanggal Lahir
+                </Typography>
+                <Typography variant="body1" component="div">
+                  Status
+                </Typography>
+                {user.marriedAt && (
+                  <Typography variant="body1" component="div">
+                    Tanggal Menikah
+                  </Typography>
+                )}
+                <Typography variant="body1" component="div">
+                  Tanggal Baptis
+                </Typography>
+                <Typography variant="body1" component="div">
+                  Tanggal Sidi
+                </Typography>
+                <Typography variant="body1" component="div">
+                  Sektor
+                </Typography>
+              </Stack>
+              <Stack textAlign="start">
+                <Typography variant="body1" color="primary" component="div">
+                  Jemaat {user.status}
+                </Typography>
+
+                {user.moveAt && (
+                  <Typography variant="body1" component="div">
+                    {dateFormatter(user.moveAt)}
+                  </Typography>
+                )}
+
+                {user.deadAt && (
+                  <Typography variant="body1" component="div">
+                    {dateFormatter(user.deadAt)}
+                  </Typography>
+                )}
+
+                {user.birthDate ? (
+                  <Typography variant="body1" component="div">
+                    {getAge(user.birthDate)} tahun
+                  </Typography>
+                ) : (
+                  dataNotSet("Data belum ada")
+                )}
+
+                <Typography variant="body1" component="div">
+                  {user.gender}
+                </Typography>
+
+                {user.birthPlace && user.registerAt ? (
+                  <Typography variant="body1" component="div">
+                    {user.birthPlace}, {dateFormatter(user.registerAt)}
+                  </Typography>
+                ) : (
+                  dataNotSet("Data belum ada")
+                )}
+
+                <Typography variant="body1" component="div">
+                  {user.isMarried}
+                </Typography>
+
+                {user.marriedAt && (
+                  <Typography variant="body1" component="div">
+                    {dateFormatter(user.marriedAt)}
+                  </Typography>
+                )}
+
+                {user.baptisAt ? (
+                  <Typography variant="body1" component="div">
+                    {dateFormatter(user.baptisAt)}
+                  </Typography>
+                ) : (
+                  dataNotSet("Data belum ada")
+                )}
+
+                {user.sidiAt ? (
+                  <Typography variant="body1" component="div">
+                    {dateFormatter(user.sidiAt)}
+                  </Typography>
+                ) : (
+                  dataNotSet("Data belum ada")
+                )}
+
+                {user.sector ? (
+                  <Typography variant="body1" component="div">
+                    {user.sector}
+                  </Typography>
+                ) : (
+                  dataNotSet("Data belum ada")
+                )}
+              </Stack>
+            </Stack>
             <Button
-              onClick={() => router.push("/edit")}
+              onClick={() => router.push(`/edit/${user.id}`)}
               sx={{ mt: 2, mr: 1 }}
               variant="outlined"
               startIcon={<EditIcon />}
@@ -154,7 +285,7 @@ const Detail = ({ id }) => {
               Edit
             </Button>
             <Button
-              onClick={() => handleDelete(user.id)}
+              onClick={() => setOpen(true)}
               color="error"
               sx={{ mt: 2 }}
               variant="outlined"
