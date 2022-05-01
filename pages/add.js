@@ -60,7 +60,7 @@ export default function Add() {
 
   const uploadData = (user) => {
     setState(prev => ({...prev, loading: true}))
-    if(user.foto){
+    if(user.foto[0]){
       const file = user.foto[0]
       const path = `efrata_photo/${Date.now()}-${user.name}-${file.name}`
       user.foto = path
@@ -73,6 +73,8 @@ export default function Add() {
           setState(prev => ({...prev, loading: false, error: true}))
           console.log(err.message)
         });
+    }else{
+      delete user.foto
     }
     addDoc(colRef, {
       ...user,
@@ -112,7 +114,7 @@ export default function Add() {
         message={state.success? "Data berhasil ditambahkan" : 'Data gagal ditambahkan'}
         key={'top' + 'center'}
       />
-      <Grid container justifyContent="center" spacing={2} sx={{ p: 4 }}>
+      <Grid container justifyContent="center" spacing={2} sx={{ py: 4 }}>
         <Grid item xs={12} md={3}>
           <Stack spacing={2} component="form" onSubmit={handleSubmit(onSubmit)}>
             <Typography
@@ -155,19 +157,13 @@ export default function Add() {
             </FormControl>
 
             <TextField
-              {...register("birthPlace", {
-                required: "Tempat lahir perlu diisi",
-              })}
-              error={errors.birthPlace ? true : false}
-              helperText={errors.birthPlace ? errors.birthPlace.message : null}
+              {...register("birthPlace")}
               label="Tempat lahir"
               variant="outlined"
             />
 
             <TextField
-              {...register("birthDate", { required: "isi tanggal lahir" })}
-              error={errors.birthDate ? true : false}
-              helperText={errors.birthDate ? errors.birthDate.message : null}
+              {...register("birthDate")}
               id="date"
               label="Tanggal lahir"
               type="date"
@@ -176,18 +172,14 @@ export default function Add() {
               }}
             />
             <TextField
-              {...register("nik", { required: "NIK perlu diisi", valueAsNumber: "Wajib angka" })}
-              error={errors.nik ? true : false}
-              helperText={errors.nik ? errors.nik.message : null}
+              {...register("nik")}
               label="NIK"
               variant="outlined"
               placeholder="ex: 1405020102011004"
             />
 
             <TextField
-              {...register("registerAt", { required: "Perlu di isi" })}
-              error={errors.registerAt ? true : false}
-              helperText={errors.registerAt ? errors.registerAt.message : null}
+              {...register("registerAt")}
               id="date"
               label="Tanggal registrasi"
               type="date"
@@ -197,9 +189,7 @@ export default function Add() {
             />
 
             <TextField
-              {...register("baptisAt", { required: "Perlu di isi" })}
-              error={errors.baptisAt ? true : false}
-              helperText={errors.baptisAt ? errors.baptisAt.message : null}
+              {...register("baptisAt")}
               id="date"
               label="Tanggal baptis"
               type="date"
@@ -209,9 +199,7 @@ export default function Add() {
             />
 
             <TextField
-              {...register("sidiAt", { required: "Perlu di isi" })}
-              error={errors.sidiAt ? true : false}
-              helperText={errors.sidiAt ? errors.sidiAt.message : null}
+              {...register("sidiAt")}
               id="date"
               label="Tanggal sidi"
               type="date"
@@ -221,17 +209,13 @@ export default function Add() {
             />
 
             <TextField
-              {...register("address", { required: "Alamat perlu diisi" })}
-              error={errors.address ? true : false}
-              helperText={errors.address ? errors.address.message : null}
+              {...register("address")}
               label="Alamat"
               variant="outlined"
             />
 
             <TextField
-              {...register("sector", { required: "Sector perlu diisi" })}
-              error={errors.sector ? true : false}
-              helperText={errors.sector ? errors.sector.message : null}
+              {...register("sector")}
               label="Sektor"
               variant="outlined"
             />
@@ -258,9 +242,7 @@ export default function Add() {
 
             {value?.kawin == "Kawin" && (
               <TextField
-                {...register("marriedAt", { required: "Perlu di isi" })}
-                error={errors.marriedAt ? true : false}
-                helperText={errors.marriedAt ? errors.marriedAt.message : null}
+                {...register("marriedAt")}
                 id="date"
                 label="Tanggal menikah"
                 type="date"
@@ -298,9 +280,7 @@ export default function Add() {
 
             {value?.status == "Meninggal" && (
               <TextField
-                {...register("deadAt", { required: "Perlu di isi" })}
-                error={errors.deadAt ? true : false}
-                helperText={errors.deadAt ? errors.deadAt.message : null}
+                {...register("deadAt")}
                 id="date"
                 label="Tanggal meninggal"
                 type="date"
@@ -311,9 +291,7 @@ export default function Add() {
             )}
             {value?.status == "Pindah" && (
               <TextField
-                {...register("moveAt", { required: "Perlu di isi" })}
-                error={errors.moveAt ? true : false}
-                helperText={errors.moveAt ? errors.moveAt.message : null}
+                {...register("moveAt")}
                 id="date"
                 label="Tanggal pindah"
                 type="date"
@@ -325,9 +303,9 @@ export default function Add() {
 
             <TextField
               accept="image/*"
-              {...register("foto", {max: 1, validate: e => e[0].size < 1000000})}
+              {...register("foto", {max: 1})}
               error={errors.foto ? true : false}
-              helperText={errors.foto ? "File size minimum 1 mb" : null}
+              helperText={errors.foto ? "max 1 foto" : null}
               label="Upload foto"
               type="file"
               InputLabelProps={{
