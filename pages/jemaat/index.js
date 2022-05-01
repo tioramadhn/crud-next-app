@@ -77,7 +77,7 @@ export default function Jemaat() {
       <Head>
         <title>Data Jemaat</title>
       </Head>
-      <Grid container spacing={2} sx={{ p: 4 }}>
+      <Grid container spacing={2} sx={{ my: 4 }}>
         <Grid item xs={12}>
           <Stack direction="row" spacing={2} justifyContent="space-between">
             <TextField

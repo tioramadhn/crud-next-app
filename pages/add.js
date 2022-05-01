@@ -28,7 +28,8 @@ export default function Add() {
   const {
     register,
     handleSubmit,
-    formState: { errors, reset },
+    reset,
+    formState: { errors },
   } = useForm();
   const onSubmit = (data) => {
     if (data.isMarried == "Belum Kawin") {
@@ -81,6 +82,18 @@ export default function Add() {
       numStambuk: Date.now()
     })
     .then(() => {
+      reset({ 
+        name: '',
+        birthPlace: '',
+        birthDate: '',
+        nik: '',
+        registerAt: '',
+        baptisAt: '',
+        sidiAt: '',
+        address: '',
+        sector: '',
+        foto: ''
+       });
       setState(prev => ({...prev, loading: false, success: true}))
       console.log('berhasil tambahin data')
     
