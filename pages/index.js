@@ -38,7 +38,8 @@ export default function Home() {
      perempuan: 0,
      remaja: 0,
      anakAnak: 0,
-     dewasa: 0
+     dewasa: 0,
+     lansia: 0,
    })
  
    useEffect(() => {
@@ -59,7 +60,8 @@ export default function Home() {
        const sizePerempuan = user.filter(item => item.gender == "Perempuan")
        const sizeAnak = user.filter(item => getAge(item.birthDate) <= 12)
        const sizeRemaja = user.filter(item => getAge(item.birthDate) > 12 && getAge(item.birthDate) <= 18)
-       const sizeDewasa = user.filter(item =>  getAge(item.birthDate) > 18)
+       const sizeDewasa = user.filter(item =>  getAge(item.birthDate) > 18 && getAge(item.birthDate) <= 60)
+       const sizeLansia = user.filter(item =>  getAge(item.birthDate) > 60)
       //  console.log(sizeAktif.length)
        setSize(
          {
@@ -70,7 +72,8 @@ export default function Home() {
            perempuan: sizePerempuan.length,
            anakAnak: sizeAnak.length,
            remaja: sizeRemaja.length,
-           dewasa: sizeDewasa.length
+           dewasa: sizeDewasa.length,
+           lansia: sizeLansia.length
          })
      }
     
@@ -91,15 +94,16 @@ export default function Home() {
     ],
   };
   const dataUsia = {
-    labels: ["Anak-anak", "Remaja", "Dewasa"],
+    labels: ["Anak-anak", "Remaja", "Dewasa", "Lansia"],
     datasets: [
       {
         label: "Usia",
-        data: [size.anakAnak, size.remaja, size.dewasa],
+        data: [size.anakAnak, size.remaja, size.dewasa, size.lansia],
         backgroundColor: [
           "rgb(255, 99, 132)",
           "rgb(54, 162, 235)",
           "rgb(255, 205, 86)",
+          "rgb(54, 205, 86)",
         ],
         hoverOffset: 4,
       },
@@ -186,7 +190,7 @@ export default function Home() {
           </Item>
         </Grid>
 
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={5}>
           <Item>
             <Doughnut data={dataJK} />
             <Typography variant="subtitle2" component="h2">
@@ -195,7 +199,7 @@ export default function Home() {
           </Item>
         </Grid>
 
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={5}>
           <Item>
             <Doughnut data={dataUsia} />
             <Typography variant="subtitle2" component="h2">

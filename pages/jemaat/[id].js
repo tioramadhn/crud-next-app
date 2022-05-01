@@ -178,6 +178,9 @@ const Detail = ({ id }) => {
                   </Typography>
                 )}
                 <Typography variant="body1" component="div">
+                  No. Stambuk
+                </Typography>
+                <Typography variant="body1" component="div">
                   Usia
                 </Typography>
                 <Typography variant="body1" component="div">
@@ -185,6 +188,9 @@ const Detail = ({ id }) => {
                 </Typography>
                 <Typography variant="body1" component="div">
                   Tempat, Tanggal Lahir
+                </Typography>
+                <Typography variant="body1" component="div">
+                  NIK
                 </Typography>
                 <Typography variant="body1" component="div">
                   Status
@@ -221,6 +227,14 @@ const Detail = ({ id }) => {
                   </Typography>
                 )}
 
+                {user.numStambuk ? (
+                  <Typography variant="body1" component="div">
+                    {user.numStambuk}
+                  </Typography>
+                ) : (
+                  dataNotSet("Data belum ada")
+                )}
+
                 {user.birthDate ? (
                   <Typography variant="body1" component="div">
                     {getAge(user.birthDate)} tahun
@@ -235,7 +249,15 @@ const Detail = ({ id }) => {
 
                 {user.birthPlace && user.registerAt ? (
                   <Typography variant="body1" component="div">
-                    {user.birthPlace}, {dateFormatter(user.registerAt)}
+                    {user.birthPlace}, {dateFormatter(user.birthDate)}
+                  </Typography>
+                ) : (
+                  dataNotSet("Data belum ada")
+                )}
+
+                {user.nik ? (
+                  <Typography variant="body1" component="div">
+                    {user.nik}
                   </Typography>
                 ) : (
                   dataNotSet("Data belum ada")

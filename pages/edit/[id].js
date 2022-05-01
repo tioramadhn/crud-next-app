@@ -114,7 +114,10 @@ export default function EditById({ id }) {
         }
     }
     
-    setDoc(docRef, data)
+    setDoc(docRef, {
+        ...data,
+        numStambuk: user.numStambuk
+      })
       .then(() => {
         setState((prev) => ({ ...prev, loading: false, success: true }));
         console.log("berhasil ubah data");
