@@ -1,0 +1,25 @@
+<?xml version="1.0" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
+ <path fill="url(#gradient-fill)" fill-opacity="1" d="M0,160L34.3,144C68.6,128,137,96,206,74.7C274.3,53,343,43,411,80C480,117,549,203,617,250.7C685.7,299,754,309,823,314.7C891.4,320,960,320,1029,277.3C1097.1,235,1166,149,1234,144C1302.9,139,1371,213,1406,250.7L1440,288L1440,0L1405.7,0C1371.4,0,1303,0,1234,0C1165.7,0,1097,0,1029,0C960,0,891,0,823,0C754.3,0,686,0,617,0C548.6,0,480,0,411,0C342.9,0,274,0,206,0C137.1,0,69,0,34,0L0,0Z"></path>
+<defs>
+					<linearGradient id="gradient-fill" x1="0" y1="0" x2="800" y2="0" gradientUnits="userSpaceOnUse">
+						
+							<stop offset="0" stop-color="#1f005c" />
+						
+							<stop offset="0.14285714285714285" stop-color="#310472" />
+						
+							<stop offset="0.2857142857142857" stop-color="#430b89" />
+						
+							<stop offset="0.42857142857142855" stop-color="#5613a0" />
+						
+							<stop offset="0.5714285714285714" stop-color="#6a1bb7" />
+						
+							<stop offset="0.7142857142857142" stop-color="#7f22cf" />
+						
+							<stop offset="0.8571428571428571" stop-color="#9529e7" />
+						
+							<stop offset="1" stop-color="#ac30ff" />
+						
+					</linearGradient>
+				</defs>
+</svg>

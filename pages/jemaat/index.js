@@ -14,7 +14,13 @@ import Link from "next/link";
 import AddIcon from "@mui/icons-material/Add";
 import { useEffect, useState } from "react";
 import { db, storage } from "../../firebase/ClientApp";
-import { collection, onSnapshot, orderBy, query, where } from "firebase/firestore";
+import {
+  collection,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+} from "firebase/firestore";
 import SearchIcon from "@mui/icons-material/Search";
 import { styled } from "@mui/material/styles";
 import Paper from "@mui/material/Paper";
@@ -43,9 +49,9 @@ export default function Jemaat() {
   const colRef = collection(db, "jemaat_users");
   const [user, setUser] = useState();
   const [q, setQ] = useState(query(colRef));
-  const [foto, setFoto] = useState()
-  const [search, setSearch] = useState()
-  const [notFound, setNotFound] = useState(false)
+  const [foto, setFoto] = useState();
+  const [search, setSearch] = useState();
+  const [notFound, setNotFound] = useState(false);
   useEffect(() => {
     // realtime collection data
     onSnapshot(q, (snapshot) => {
@@ -56,12 +62,12 @@ export default function Jemaat() {
       setUser(data);
     });
 
-    if(user){
-      user.forEach(e=>{
-        if(e.foto){
-          getFoto(e.foto, e.id)
+    if (user) {
+      user.forEach((e) => {
+        if (e.foto) {
+          getFoto(e.foto, e.id);
         }
-      })
+      });
     }
   }, [user, q, search, notFound]);
 
@@ -70,28 +76,28 @@ export default function Jemaat() {
   };
 
   const getFoto = async (path, key) => {
-    const res = await getDownloadURL(ref(storage, path))
-    setFoto(prev => ({...prev, [key]: res}))
+    const res = await getDownloadURL(ref(storage, path));
+    setFoto((prev) => ({ ...prev, [key]: res }));
   };
 
   const handleSearch = (e) => {
-    const key = e.target.value.toLowerCase()
-    if(key){
-      const result = user.filter( i => i.name.toLowerCase().indexOf(key) > -1)
-      if(result.length != 0){
-        setSearch(result)
-        setNotFound(false)
-      }else{
-        setSearch([])
-        console.log('notFound');
-        setNotFound(true)
+    const key = e.target.value.toLowerCase();
+    if (key) {
+      const result = user.filter((i) => i.name.toLowerCase().indexOf(key) > -1);
+      if (result.length != 0) {
+        setSearch(result);
+        setNotFound(false);
+      } else {
+        setSearch([]);
+        console.log("notFound");
+        setNotFound(true);
       }
-    }else{
-      setNotFound(false)
-      setSearch(null)
-      setQ(query(colRef))
+    } else {
+      setNotFound(false);
+      setSearch(null);
+      setQ(query(colRef));
     }
-  }
+  };
 
   return (
     <div>
@@ -99,7 +105,7 @@ export default function Jemaat() {
         <title>Data Jemaat</title>
       </Head>
       <Grid container spacing={2} sx={{ my: 4 }}>
-        <Grid item  xs={12}>
+        <Grid item xs={12}>
           <Stack direction="row" spacing={2} justifyContent="center">
             <TextField
               onChange={handleSearch}
@@ -115,70 +121,62 @@ export default function Jemaat() {
               variant="outlined"
             />
           </Stack>
-          <Divider sx={{mt: 2}} />
+          <Divider sx={{ mt: 2 }} />
         </Grid>
 
-        {user && foto && search==null ? (
+        {user && foto && search == null ? (
           user.map((item) => (
-            <Grid
-              item
-              xs={12}
-              md={6}
-              lg={3}
-              key={item.id}
-              onClick={() => handleDetail(item.id)}
-            >
-              <Item elevation={0}>
-                <Stack direction="row" spacing={2} alignItems="center">
-                  <Avatar
-                    alt="Remy Sharp"
-                    src={
-                      item.foto
-                        ? foto[item.id]
-                        : "blank-profile-picture.png"
-                    }
-                    sx={{ width: 48, height: 48, marginRight: "1rem" }}
-                  />
-                  <Box>
-                    <Typography variant="subtitle2">{item.name}</Typography>
-                    <Typography variant="subtitle1">
-                      Jemaat {item.status}
-                    </Typography>
-                  </Box>
-                </Stack>
-              </Item>
-            </Grid>
+            <Grid item xs={12} md={6} lg={3} key={item.id}>
+                <Link href={`/jemaat/${item.id}`} passHref>
+                <Item elevation={0}>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <Avatar
+                      alt="Remy Sharp"
+                      src={
+                        item.foto ? foto[item.id] : "blank-profile-picture.png"
+                      }
+                      sx={{ width: 48, height: 48, marginRight: "1rem" }}
+                    />
+                    <Box>
+                      <Typography variant="subtitle2">{item.name}</Typography>
+                      <Typography variant="subtitle1">
+                        Jemaat {item.status}
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </Item>
+            </Link>
+              </Grid>
           ))
         ) : search && foto ? (
           search.map((item) => (
             <Grid
-              item
-              xs={12}
-              md={6}
-              lg={3}
-              key={item.id}
-              onClick={() => handleDetail(item.id)}
-            >
-              <Item elevation={0}>
-                <Stack direction="row" spacing={2} alignItems="center">
-                  <Avatar
-                    alt="Remy Sharp"
-                    src={
-                      item.foto
-                        ? foto[item.id]
-                        : "blank-profile-picture.png"
-                    }
-                    sx={{ width: 48, height: 48, marginRight: "1rem" }}
-                  />
-                  <Box>
-                    <Typography variant="subtitle2">{item.name}</Typography>
-                    <Typography variant="subtitle1">
-                      Jemaat {item.status}
-                    </Typography>
-                  </Box>
-                </Stack>
-              </Item>
-            </Grid>
+                item
+                xs={12}
+                md={6}
+                lg={3}
+                key={item.id}
+              >
+            <Link href={`/jemaat/${item.id}`} passHref>
+                <Item elevation={0}>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <Avatar
+                      alt="Remy Sharp"
+                      src={
+                        item.foto ? foto[item.id] : "blank-profile-picture.png"
+                      }
+                      sx={{ width: 48, height: 48, marginRight: "1rem" }}
+                    />
+                    <Box>
+                      <Typography variant="subtitle2">{item.name}</Typography>
+                      <Typography variant="subtitle1">
+                        Jemaat {item.status}
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </Item>
+            </Link>
+              </Grid>
           ))
         ) : (
           <Grid
@@ -204,7 +202,7 @@ export default function Jemaat() {
             item
             xs={12}
           >
-           Data tidak ditemukan
+            Data tidak ditemukan
           </Grid>
         )}
       </Grid>

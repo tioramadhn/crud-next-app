@@ -21,6 +21,7 @@ import {
   Divider,
   Grid,
   InputAdornment,
+  Skeleton,
   Snackbar,
   Stack,
   TextField,
@@ -33,6 +34,7 @@ import { dateFormatter, getAge } from "../../utils/date";
 import Head from "next/head";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import Link from "next/link";
 
 const Detail = ({ id }) => {
   const router = useRouter();
@@ -142,12 +144,12 @@ const Detail = ({ id }) => {
             {foto ? (
               <Avatar src={foto} sx={{ height: "20rem", width: "20rem" }} />
             ) : (
-              <CircularProgress />
+              <Skeleton variant="circular" width={"20rem"} height={"20rem"} />
             )}
           </Grid>
 
           <Grid item xs={12} md={8}>
-            <Typography sx={{ textTransform: "capitalize" }} variant="h3">
+            <Typography sx={{ textTransform: "capitalize" }} variant="h4">
               {user.name}
             </Typography>
             <Stack direction="row">
@@ -207,6 +209,9 @@ const Detail = ({ id }) => {
                   Tanggal Sidi
                 </Typography>
                 <Typography variant="body1" component="div">
+                  Tanggal Registrasi
+                </Typography>
+                <Typography variant="body1" component="div">
                   Sektor
                 </Typography>
               </Stack>
@@ -247,7 +252,7 @@ const Detail = ({ id }) => {
                   {user.gender}
                 </Typography>
 
-                {user.birthPlace && user.registerAt ? (
+                {user.birthPlace && user.birthDate ? (
                   <Typography variant="body1" component="div">
                     {user.birthPlace}, {dateFormatter(user.birthDate)}
                   </Typography>
@@ -289,6 +294,14 @@ const Detail = ({ id }) => {
                   dataNotSet("Data belum ada")
                 )}
 
+                {user.registerAt ? (
+                  <Typography variant="body1" component="div">
+                    {dateFormatter(user.registerAt)}
+                  </Typography>
+                ) : (
+                  dataNotSet("Data belum ada")
+                )}
+
                 {user.sector ? (
                   <Typography variant="body1" component="div">
                     {user.sector}
@@ -298,14 +311,16 @@ const Detail = ({ id }) => {
                 )}
               </Stack>
             </Stack>
-            <Button
-              onClick={() => router.push(`/edit/${user.id}`)}
-              sx={{ mt: 2, mr: 1 }}
-              variant="outlined"
-              startIcon={<EditIcon />}
-            >
-              Edit
-            </Button>
+            <Link href={`/edit/${user.id}`} passHref>
+              <Button
+                sx={{ mt: 2, mr: 1 }}
+                variant="outlined"
+                startIcon={<EditIcon />}
+              >
+                Edit
+              </Button>
+            </Link>
+
             <Button
               onClick={() => setOpen(true)}
               color="error"

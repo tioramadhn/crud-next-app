@@ -190,7 +190,7 @@ export default function Home() {
           </Item>
         </Grid>
 
-        <Grid item xs={12} md={5}>
+        <Grid item xs={12} md={4}>
           <Item>
             <Doughnut data={dataJK} />
             <Typography variant="subtitle2" component="h2">
@@ -199,7 +199,7 @@ export default function Home() {
           </Item>
         </Grid>
 
-        <Grid item xs={12} md={5}>
+        <Grid item xs={12} md={4}>
           <Item>
             <Doughnut data={dataUsia} />
             <Typography variant="subtitle2" component="h2">
