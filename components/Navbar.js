@@ -16,18 +16,16 @@ import {
   ListItemText,
 } from "@mui/material";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
-import HomeIcon from '@mui/icons-material/Home';
+import HomeIcon from "@mui/icons-material/Home";
 import { useRouter } from "next/router";
-import GroupsIcon from '@mui/icons-material/Groups';
+import GroupsIcon from "@mui/icons-material/Groups";
 import Link from "next/link";
-import LogoutIcon from '@mui/icons-material/Logout';
-import {
- signOut,
-} from 'firebase/auth'
+import LogoutIcon from "@mui/icons-material/Logout";
+import { signOut } from "firebase/auth";
 import { auth } from "../firebase/ClientApp";
 
-export default function ButtonAppBar({user}) {
-  const router = useRouter()
+export default function ButtonAppBar({ user }) {
+  const router = useRouter();
 
   const [drawer, setDrawer] = React.useState(false);
 
@@ -42,15 +40,15 @@ export default function ButtonAppBar({user}) {
     setDrawer(open);
   };
 
-  const handleLogOut = ( ) => {
+  const handleLogOut = () => {
     signOut(auth)
-    .then(() => {
-      console.log('user signed out')
-    })
-    .catch(err => {
-      console.log(err.message)
-    })
-  }
+      .then(() => {
+        console.log("user signed out");
+      })
+      .catch((err) => {
+        console.log(err.message);
+      });
+  };
 
   const list = (
     <Box
@@ -60,36 +58,35 @@ export default function ButtonAppBar({user}) {
       onKeyDown={toggleDrawer(false)}
     >
       <List>
-
-        <Link href={'/'} passHref>
-        <ListItem button>
-          <ListItemIcon>
-            <HomeIcon />
-          </ListItemIcon>
-          <ListItemText primary={"Beranda"} />
-        </ListItem>
+        <Link href={"/"} passHref>
+          <ListItem button>
+            <ListItemIcon>
+              <HomeIcon />
+            </ListItemIcon>
+            <ListItemText primary={"Beranda"} />
+          </ListItem>
         </Link>
 
-        <Link href={'/jemaat'} passHref>
-        <ListItem button>
-          <ListItemIcon>
-            <GroupsIcon />
-          </ListItemIcon>
-          <ListItemText primary={"Data Jemaat"} />
-        </ListItem>
+        <Link href={"/jemaat"} passHref>
+          <ListItem button>
+            <ListItemIcon>
+              <GroupsIcon />
+            </ListItemIcon>
+            <ListItemText primary={"Data Jemaat"} />
+          </ListItem>
         </Link>
 
         <Link href="/add" passHref>
-        <ListItem button>
-          <ListItemIcon>
-            <AddCircleIcon />
-          </ListItemIcon>
-          <ListItemText primary={"Tambah data"} />
-        </ListItem>
+          <ListItem button>
+            <ListItemIcon>
+              <AddCircleIcon />
+            </ListItemIcon>
+            <ListItemText primary={"Tambah data"} />
+          </ListItem>
         </Link>
 
-        <Divider/>
-        <ListItem button  onClick={handleLogOut}>
+        <Divider />
+        <ListItem button onClick={handleLogOut}>
           <ListItemIcon>
             <LogoutIcon />
           </ListItemIcon>
@@ -100,7 +97,7 @@ export default function ButtonAppBar({user}) {
   );
 
   return (
-    <Box sx={{ flexGrow: 1, transition: '3s' }}>
+    <Box sx={{ flexGrow: 1, transition: "3s" }}>
       <Drawer anchor={"left"} open={drawer} onClose={toggleDrawer(false)}>
         {list}
       </Drawer>
@@ -120,11 +117,11 @@ export default function ButtonAppBar({user}) {
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               BNKP EFRATA
             </Typography>
-            {user &&   <Typography variant="h6" component="div">
-              Hi, {user.email}
-            </Typography>}
-          
-            
+            {user && (
+              <Typography variant="h6" component="div">
+                Hi, Admin
+              </Typography>
+            )}
           </Toolbar>
         </Container>
       </AppBar>

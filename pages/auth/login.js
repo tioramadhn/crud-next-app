@@ -118,7 +118,7 @@ export default function Login() {
       >
         <CircularProgress color="inherit" />
       </Backdrop>
-      <Grid xs={8} md={4} item>
+      <Grid xs={12} md={4} item>
         <Stack
           spacing={4}
           component="form"
