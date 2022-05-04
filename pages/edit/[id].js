@@ -21,7 +21,7 @@ import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { useForm } from "react-hook-form";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { db, storage } from "../../firebase/ClientApp";
+import { auth, db, storage } from "../../firebase/ClientApp";
 import {
   addDoc,
   collection,
@@ -33,6 +33,7 @@ import {
 } from "firebase/firestore";
 import EditIcon from "@mui/icons-material/Edit";
 import { useRouter } from "next/router";
+import { onAuthStateChanged } from "firebase/auth";
 
 export default function EditById({ id }) {
   const router = useRouter();
@@ -50,7 +51,11 @@ export default function EditById({ id }) {
     onSnapshot(docRef, (doc) => {
       setUser({ ...doc.data(), id: doc.id });
     });
-
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        router.push("/auth/login");
+      }
+    });
     // if (user) {
     //   if (user.foto) {
     //     getDownloadURL(ref(storage, user.foto)).then((url) => {
@@ -107,17 +112,17 @@ export default function EditById({ id }) {
           console.log(err.message);
         });
     } else {
-        if(user.foto){
-            data.foto = user.foto;
-        }else{
-            delete data.foto
-        }
+      if (user.foto) {
+        data.foto = user.foto;
+      } else {
+        delete data.foto;
+      }
     }
-    
+
     setDoc(docRef, {
-        ...data,
-        numStambuk: user.numStambuk
-      })
+      ...data,
+      numStambuk: user.numStambuk,
+    })
       .then(() => {
         setState((prev) => ({ ...prev, loading: false, success: true }));
         console.log("berhasil ubah data");
@@ -149,237 +154,247 @@ export default function EditById({ id }) {
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
         open={state.error || state.success}
         onClose={handleClose}
-        message={
-          state.success ? "Data berhasil diubah" : "Data gagal diubah"
-        }
+        message={state.success ? "Data berhasil diubah" : "Data gagal diubah"}
         key={"top" + "center"}
       />
-      {
-        user ?  <Grid container justifyContent="center" spacing={2} sx={{ py: 4 }}>
-        <Grid item xs={12} md={3}>
-          <Stack spacing={2} component="form" onSubmit={handleSubmit(onSubmit)}>
-            <Typography
-              textAlign={"center"}
-              variant="h4"
-              component="span"
-              sx={{ flexGrow: 1 }}
+      {user ? (
+        <Grid container justifyContent="center" spacing={2} sx={{ py: 4 }}>
+          <Grid item xs={12} md={3}>
+            <Stack
+              spacing={2}
+              component="form"
+              onSubmit={handleSubmit(onSubmit)}
             >
-              <EditIcon sx={{ marginRight: "1rem" }} />
-              Edit data
-            </Typography>
+              <Typography
+                textAlign={"center"}
+                variant="h4"
+                component="span"
+                sx={{ flexGrow: 1 }}
+              >
+                <EditIcon sx={{ marginRight: "1rem" }} />
+                Edit data
+              </Typography>
 
-            <Divider />
+              <Divider />
 
-            <TextField
-              {...register("name", { required: "Nama perlu diisi" })}
-              error={errors.name ? true : false}
-              helperText={errors.name ? errors.name.message : null}
-              label="Nama lengkap anda"
-              variant="outlined"
-              defaultValue={user.name}
-            />
-            <FormControl>
-              <FormLabel id="demo-row-radio-buttons-group-label">
-                Jenis Kelamin
-              </FormLabel>
-              <RadioGroup row defaultValue={user.gender}>
-                <FormControlLabel
-                  {...register("gender")}
-                  value="Perempuan"
-                  control={<Radio />}
-                  label="Perempuan"
-                />
-                <FormControlLabel
-                  {...register("gender")}
-                  value="Laki-laki"
-                  control={<Radio />}
-                  label="Laki-Laki"
-                />
-              </RadioGroup>
-            </FormControl>
-
-            <TextField
-              {...register("birthPlace")}
-              defaultValue={user.birthPlace}
-              label="Tempat lahir"
-              variant="outlined"
-            />
-
-            <TextField
-              {...register("birthDate")}
-              defaultValue={user.birthDate}
-              id="date"
-              label="Tanggal lahir"
-              type="date"
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />
-            <TextField
-              {...register("nik")}
-              defaultValue={user.nik}
-              label="NIK"
-              variant="outlined"
-              placeholder="ex: 1405020102011004"
-            />
-
-            <TextField
-              {...register("registerAt")}
-              defaultValue={user.registerAt}
-              id="date"
-              label="Tanggal registrasi"
-              type="date"
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />
-
-            <TextField
-              {...register("baptisAt")}
-              defaultValue={user.baptisAt}
-              id="date"
-              label="Tanggal baptis"
-              type="date"
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />
-
-            <TextField
-              {...register("sidiAt")}
-              defaultValue={user.sidiAt}
-              id="date"
-              label="Tanggal sidi"
-              type="date"
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />
-
-            <TextField
-              {...register("address")}
-              defaultValue={user.address}
-              label="Alamat"
-              variant="outlined"
-            />
-
-            <TextField
-              {...register("sector")}
-              defaultValue={user.sector}
-              label="Sektor"
-              variant="outlined"
-            />
-
-            <FormControl>
-              <FormLabel id="demo-row-radio-buttons-group-label">
-                Status Perkawinan
-              </FormLabel>
-              <RadioGroup row   defaultValue={user.isMarried} onChange={handleKawin}>
-                <FormControlLabel
-                  {...register("isMarried")}
-                  value="Kawin"
-                  control={<Radio />}
-                  label="Kawin"
-                />
-                <FormControlLabel
-                  {...register("isMarried")}
-                  value="Belum Kawin"
-                  control={<Radio />}
-                  label="Belum Kawin"
-                />
-              </RadioGroup>
-            </FormControl>
-
-            {value?.kawin == "Kawin" && (
               <TextField
-                {...register("marriedAt")}
-                defaultValue={user.marriedAt}
+                {...register("name", { required: "Nama perlu diisi" })}
+                error={errors.name ? true : false}
+                helperText={errors.name ? errors.name.message : null}
+                label="Nama lengkap anda"
+                variant="outlined"
+                defaultValue={user.name}
+              />
+              <FormControl>
+                <FormLabel id="demo-row-radio-buttons-group-label">
+                  Jenis Kelamin
+                </FormLabel>
+                <RadioGroup row defaultValue={user.gender}>
+                  <FormControlLabel
+                    {...register("gender")}
+                    value="Perempuan"
+                    control={<Radio />}
+                    label="Perempuan"
+                  />
+                  <FormControlLabel
+                    {...register("gender")}
+                    value="Laki-laki"
+                    control={<Radio />}
+                    label="Laki-Laki"
+                  />
+                </RadioGroup>
+              </FormControl>
+
+              <TextField
+                {...register("birthPlace")}
+                defaultValue={user.birthPlace}
+                label="Tempat lahir"
+                variant="outlined"
+              />
+
+              <TextField
+                {...register("birthDate")}
+                defaultValue={user.birthDate}
                 id="date"
-                label="Tanggal menikah"
+                label="Tanggal lahir"
                 type="date"
                 InputLabelProps={{
                   shrink: true,
                 }}
               />
-            )}
-
-            <FormControl>
-              <FormLabel id="demo-row-radio-buttons-group-label">
-                Status Keaktifan
-              </FormLabel>
-              <RadioGroup row  defaultValue={user.status} onChange={handleStatus}>
-                <FormControlLabel
-                  {...register("status")}
-                  value="Aktif"
-                  control={<Radio />}
-                  label="Aktif"
-                />
-                <FormControlLabel
-                  {...register("status")}
-                  value="Pindah"
-                  control={<Radio />}
-                  label="Pindah"
-                />
-                <FormControlLabel
-                  {...register("status")}
-                  value="Meninggal"
-                  control={<Radio />}
-                  label="Meninggal"
-                />
-              </RadioGroup>
-            </FormControl>
-
-            {value?.status == "Meninggal" && (
               <TextField
-                {...register("deadAt")}
-                defaultValue={user.deadAt}
+                {...register("nik")}
+                defaultValue={user.nik}
+                label="NIK"
+                variant="outlined"
+                placeholder="ex: 1405020102011004"
+              />
+
+              <TextField
+                {...register("registerAt")}
+                defaultValue={user.registerAt}
                 id="date"
-                label="Tanggal meninggal"
+                label="Tanggal registrasi"
                 type="date"
                 InputLabelProps={{
                   shrink: true,
                 }}
               />
-            )}
-            {value?.status == "Pindah"  && (
+
               <TextField
-                {...register("moveAt")}
-                defaultValue={user.moveAt}
+                {...register("baptisAt")}
+                defaultValue={user.baptisAt}
                 id="date"
-                label="Tanggal pindah"
+                label="Tanggal baptis"
                 type="date"
                 InputLabelProps={{
                   shrink: true,
                 }}
               />
-            )}
 
-            <TextField
-              accept="image/*"
-              {...register("foto", { max: 1 })}
-              error={errors.foto ? true : false}
-              helperText={errors.foto ? "max 1 foto" : null}
-              label="Upload foto"
-              type="file"
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={state.loading ? true : false}
-            >
-              Ubah data
-            </Button>
-          </Stack>
+              <TextField
+                {...register("sidiAt")}
+                defaultValue={user.sidiAt}
+                id="date"
+                label="Tanggal sidi"
+                type="date"
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+
+              <TextField
+                {...register("address")}
+                defaultValue={user.address}
+                label="Alamat"
+                variant="outlined"
+              />
+
+              <TextField
+                {...register("sector")}
+                defaultValue={user.sector}
+                label="Sektor"
+                variant="outlined"
+              />
+
+              <FormControl>
+                <FormLabel id="demo-row-radio-buttons-group-label">
+                  Status Perkawinan
+                </FormLabel>
+                <RadioGroup
+                  row
+                  defaultValue={user.isMarried}
+                  onChange={handleKawin}
+                >
+                  <FormControlLabel
+                    {...register("isMarried")}
+                    value="Kawin"
+                    control={<Radio />}
+                    label="Kawin"
+                  />
+                  <FormControlLabel
+                    {...register("isMarried")}
+                    value="Belum Kawin"
+                    control={<Radio />}
+                    label="Belum Kawin"
+                  />
+                </RadioGroup>
+              </FormControl>
+
+              {value?.kawin == "Kawin" && (
+                <TextField
+                  {...register("marriedAt")}
+                  defaultValue={user.marriedAt}
+                  id="date"
+                  label="Tanggal menikah"
+                  type="date"
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
+              )}
+
+              <FormControl>
+                <FormLabel id="demo-row-radio-buttons-group-label">
+                  Status Keaktifan
+                </FormLabel>
+                <RadioGroup
+                  row
+                  defaultValue={user.status}
+                  onChange={handleStatus}
+                >
+                  <FormControlLabel
+                    {...register("status")}
+                    value="Aktif"
+                    control={<Radio />}
+                    label="Aktif"
+                  />
+                  <FormControlLabel
+                    {...register("status")}
+                    value="Pindah"
+                    control={<Radio />}
+                    label="Pindah"
+                  />
+                  <FormControlLabel
+                    {...register("status")}
+                    value="Meninggal"
+                    control={<Radio />}
+                    label="Meninggal"
+                  />
+                </RadioGroup>
+              </FormControl>
+
+              {value?.status == "Meninggal" && (
+                <TextField
+                  {...register("deadAt")}
+                  defaultValue={user.deadAt}
+                  id="date"
+                  label="Tanggal meninggal"
+                  type="date"
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
+              )}
+              {value?.status == "Pindah" && (
+                <TextField
+                  {...register("moveAt")}
+                  defaultValue={user.moveAt}
+                  id="date"
+                  label="Tanggal pindah"
+                  type="date"
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
+              )}
+
+              <TextField
+                accept="image/*"
+                {...register("foto", { max: 1 })}
+                error={errors.foto ? true : false}
+                helperText={errors.foto ? "max 1 foto" : null}
+                label="Upload foto"
+                type="file"
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={state.loading ? true : false}
+              >
+                Ubah data
+              </Button>
+            </Stack>
+          </Grid>
         </Grid>
-      </Grid> :
-      <Grid container justifyContent="center" p={4}>
-       <CircularProgress />
-      </Grid>
-      }
-     
+      ) : (
+        <Grid container justifyContent="center" p={4}>
+          <CircularProgress />
+        </Grid>
+      )}
     </LocalizationProvider>
   );
 }

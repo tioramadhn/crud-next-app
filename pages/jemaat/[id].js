@@ -8,7 +8,7 @@ import {
   query,
   where,
 } from "firebase/firestore";
-import { db, storage } from "../../firebase/ClientApp";
+import { auth, db, storage } from "../../firebase/ClientApp";
 import {
   Avatar,
   Backdrop,
@@ -35,6 +35,7 @@ import Head from "next/head";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Link from "next/link";
+import { onAuthStateChanged } from "firebase/auth";
 
 const Detail = ({ id }) => {
   const router = useRouter();
@@ -51,6 +52,12 @@ const Detail = ({ id }) => {
       setUser({ ...doc.data(), id: doc.id });
     });
 
+    onAuthStateChanged(auth, (user) => {
+      if(!user){
+        router.push('/auth/login')
+      }
+    })
+
     if (user) {
       if (user.foto) {
         getDownloadURL(ref(storage, user.foto)).then((url) => {
@@ -61,6 +68,7 @@ const Detail = ({ id }) => {
       }
     }
   }, [user]);
+
 
   const handleDelete = (id) => {
     setOpen(false);

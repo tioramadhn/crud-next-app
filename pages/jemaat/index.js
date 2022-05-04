@@ -13,7 +13,7 @@ import Head from "next/head";
 import Link from "next/link";
 import AddIcon from "@mui/icons-material/Add";
 import { useEffect, useState } from "react";
-import { db, storage } from "../../firebase/ClientApp";
+import { auth, db, storage } from "../../firebase/ClientApp";
 import {
   collection,
   onSnapshot,
@@ -28,6 +28,7 @@ import { Box } from "@mui/system";
 import { useRouter } from "next/router";
 import { getDownloadURL, ref } from "firebase/storage";
 import { useDownloadURL } from "react-firebase-hooks/storage";
+import { onAuthStateChanged } from "firebase/auth";
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
@@ -70,6 +71,14 @@ export default function Jemaat() {
       });
     }
   }, [user, q, search, notFound]);
+
+  useEffect(()=> {
+    onAuthStateChanged(auth, (user) => {
+      if(!user){
+        router.push('/auth/login')
+      }
+    })
+  },[])
 
   const handleDetail = (id) => {
     router.push(`/jemaat/${id}`);

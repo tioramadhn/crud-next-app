@@ -14,16 +14,19 @@ import {
   Typography,MuiAlert, Snackbar
 } from "@mui/material";
 import Head from "next/head";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import { useForm } from "react-hook-form";
 import { ref, uploadBytes } from "firebase/storage";
-import { db, storage } from "../firebase/ClientApp";
+import { auth, db, storage } from "../firebase/ClientApp";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
+import { useRouter } from "next/router";
 
 export default function Add() {
+  const router = useRouter()
   const colRef = collection(db, "jemaat_users");
   const {
     register,
@@ -110,6 +113,14 @@ export default function Add() {
   const handleClose = () => {
     setState({success: false, loading: false, error: false})
   };
+
+  useEffect(()=> {
+    onAuthStateChanged(auth, (user) => {
+      if(!user){
+        router.push('/auth/login')
+      }
+    })
+  },[])
 
   return (
     <LocalizationProvider dateAdapter={AdapterMoment}>

@@ -2,7 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
-
+import {getAuth} from 'firebase/auth';
 
 
 const firebaseConfig = {
@@ -26,5 +26,8 @@ const db = getFirestore(app);
 // Get a reference to the storage service, which is used to create references in your storage bucket
 const storage = getStorage(app);
 
-export {db, storage}
+// get auth services
+const auth = getAuth(app)
+
+export {db, storage, auth}
 

@@ -11,10 +11,12 @@ import AccessibilityNewIcon from "@mui/icons-material/AccessibilityNew";
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import CloudOffIcon from '@mui/icons-material/CloudOff';
 import { Box } from "@mui/system";
-import { db } from "../firebase/ClientApp";
+import { auth, db } from "../firebase/ClientApp";
 import { useEffect, useState } from "react";
-import { collection, onSnapshot, query } from "firebase/firestore";
+import { collection, onSnapshot, query, getDocs } from "firebase/firestore";
 import { getAge } from "../utils/date";
+import { onAuthStateChanged } from "firebase/auth";
+import { useRouter } from "next/router";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 const Item = styled(Paper)(({ theme }) => ({
@@ -25,11 +27,10 @@ const Item = styled(Paper)(({ theme }) => ({
   color: theme.palette.text.secondary,
 }));
 
-export default function Home() {
-   // collection ref
-   const colRef = collection(db, "jemaat_users");
-   const [user, setUser] = useState();
-   const [q, setQ] = useState(query(colRef));
+export default function Home({data}) {
+  const router = useRouter()
+   const [user, setUser] = useState(data);
+   
    const [size, setSize] = useState({
      aktif: 0,
      pindah: 0,
@@ -42,42 +43,42 @@ export default function Home() {
      lansia: 0,
    })
  
-   useEffect(() => {
-     // realtime collection data
-     onSnapshot(q, (snapshot) => {
-       let data = [];
-       snapshot.docs.forEach((doc) => {
-         data.push({ ...doc.data(), id: doc.id });
-       });
-       setUser(data);
-     });
-
-     if(user){
-       const sizeAktif = user.filter(item => item.status == "Aktif")
-       const sizePindah = user.filter(item => item.status == "Pindah")
-       const sizeMeninggal = user.filter(item => item.status == "Meninggal")
-       const sizeLaki = user.filter(item => item.gender == "Laki-laki")
-       const sizePerempuan = user.filter(item => item.gender == "Perempuan")
-       const sizeAnak = user.filter(item => getAge(item.birthDate) <= 12)
-       const sizeRemaja = user.filter(item => getAge(item.birthDate) > 12 && getAge(item.birthDate) <= 18)
-       const sizeDewasa = user.filter(item =>  getAge(item.birthDate) > 18 && getAge(item.birthDate) <= 60)
-       const sizeLansia = user.filter(item =>  getAge(item.birthDate) > 60)
-      //  console.log(sizeAktif.length)
-       setSize(
-         {
-           aktif: sizeAktif.length,
-           pindah: sizePindah.length,
-           meninggal: sizeMeninggal.length,
-           lakiLaki: sizeLaki.length,
-           perempuan: sizePerempuan.length,
-           anakAnak: sizeAnak.length,
-           remaja: sizeRemaja.length,
-           dewasa: sizeDewasa.length,
-           lansia: sizeLansia.length
-         })
-     }
+  //  useEffect(() => {
     
-   }, [user, size]);
+    
+  //  }, [user, size]);
+
+   useEffect(()=> {
+    if(user){
+      const sizeAktif = user.filter(item => item.status == "Aktif")
+      const sizePindah = user.filter(item => item.status == "Pindah")
+      const sizeMeninggal = user.filter(item => item.status == "Meninggal")
+      const sizeLaki = user.filter(item => item.gender == "Laki-laki")
+      const sizePerempuan = user.filter(item => item.gender == "Perempuan")
+      const sizeAnak = user.filter(item => getAge(item.birthDate) <= 12)
+      const sizeRemaja = user.filter(item => getAge(item.birthDate) > 12 && getAge(item.birthDate) <= 18)
+      const sizeDewasa = user.filter(item =>  getAge(item.birthDate) > 18 && getAge(item.birthDate) <= 60)
+      const sizeLansia = user.filter(item =>  getAge(item.birthDate) > 60)
+     //  console.log(sizeAktif.length)
+      setSize(
+        {
+          aktif: sizeAktif.length,
+          pindah: sizePindah.length,
+          meninggal: sizeMeninggal.length,
+          lakiLaki: sizeLaki.length,
+          perempuan: sizePerempuan.length,
+          anakAnak: sizeAnak.length,
+          remaja: sizeRemaja.length,
+          dewasa: sizeDewasa.length,
+          lansia: sizeLansia.length
+        })
+    }
+    onAuthStateChanged(auth, (user) => {
+      if(!user){
+        router.push('/auth/login')
+      }
+    })
+  },[])
 
    const dataJK = {
     labels: ["Laki-Laki", "Perempuan"],
@@ -210,4 +211,33 @@ export default function Home() {
       </Grid>
     </div>
   );
+}
+
+
+export async function getServerSideProps(){
+  // collection ref
+  const colRef = collection(db, "jemaat_users");
+  const q = query(colRef);
+
+  let data = [];
+   // realtime collection data
+  //  onSnapshot(q, (snapshot) => {
+  //   snapshot.docs.forEach((doc) => {
+  //     data.push({ ...doc.data(), id: doc.id });
+  //   });
+  // });
+
+  const querySnapshot = await getDocs(colRef);
+  querySnapshot.forEach((doc) => {
+    // doc.data() is never undefined for query doc snapshots
+    data.push({ ...doc.data(), id: doc.id });
+  });
+  
+  
+
+  return{
+    props: {
+      data
+    }
+  }
 }

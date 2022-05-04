@@ -20,8 +20,13 @@ import HomeIcon from '@mui/icons-material/Home';
 import { useRouter } from "next/router";
 import GroupsIcon from '@mui/icons-material/Groups';
 import Link from "next/link";
+import LogoutIcon from '@mui/icons-material/Logout';
+import {
+ signOut,
+} from 'firebase/auth'
+import { auth } from "../firebase/ClientApp";
 
-export default function ButtonAppBar() {
+export default function ButtonAppBar({user}) {
   const router = useRouter()
 
   const [drawer, setDrawer] = React.useState(false);
@@ -36,6 +41,16 @@ export default function ButtonAppBar() {
 
     setDrawer(open);
   };
+
+  const handleLogOut = ( ) => {
+    signOut(auth)
+    .then(() => {
+      console.log('user signed out')
+    })
+    .catch(err => {
+      console.log(err.message)
+    })
+  }
 
   const list = (
     <Box
@@ -72,12 +87,20 @@ export default function ButtonAppBar() {
           <ListItemText primary={"Tambah data"} />
         </ListItem>
         </Link>
+
+        <Divider/>
+        <ListItem button  onClick={handleLogOut}>
+          <ListItemIcon>
+            <LogoutIcon />
+          </ListItemIcon>
+          <ListItemText primary={"Keluar"} />
+        </ListItem>
       </List>
     </Box>
   );
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
+    <Box sx={{ flexGrow: 1, transition: '3s' }}>
       <Drawer anchor={"left"} open={drawer} onClose={toggleDrawer(false)}>
         {list}
       </Drawer>
@@ -97,7 +120,11 @@ export default function ButtonAppBar() {
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               BNKP EFRATA
             </Typography>
-            <Button color="inherit">Login</Button>
+            {user &&   <Typography variant="h6" component="div">
+              Hi, {user.email}
+            </Typography>}
+          
+            
           </Toolbar>
         </Container>
       </AppBar>
