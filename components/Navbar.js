@@ -64,9 +64,9 @@ export default function ButtonAppBar({ user }) {
     signOut(auth)
       .then(() => {
         const cookies = new Cookies();
-        cookies.remove("session");
+        cookies.remove("session", { path: "/" });
         setState({ success: false, loading: false, error: false });
-        console.log("user signed out");
+        router.replace('/auth/login')
       })
       .catch((err) => {
         console.log(err.message);

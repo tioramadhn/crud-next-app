@@ -24,12 +24,8 @@ function MyApp({ Component, pageProps }) {
     onAuthStateChanged(auth, (user) => {
       if (user) {
         setNav(true);
-        if(router.pathname == '/auth/login'){
-          router.replace('/')
-        }
       } else {
         setNav(false);
-        router.replace('/auth/login')
       }
     });
   }, []);

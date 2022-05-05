@@ -1,0 +1,39 @@
+<svg width="640" height="720" viewBox="0 0 640 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="640" height="720" fill="url(#gradient-fill)"/>
+<defs>
+					<linearGradient id="gradient-fill" x1="0" y1="0" x2="800" y2="0" gradientUnits="userSpaceOnUse">
+						
+							<stop offset="0" stop-color="#1f005c" />
+						
+							<stop offset="0.14285714285714285" stop-color="#310472" />
+						
+							<stop offset="0.2857142857142857" stop-color="#430b89" />
+						
+							<stop offset="0.42857142857142855" stop-color="#5613a0" />
+						
+							<stop offset="0.5714285714285714" stop-color="#6a1bb7" />
+						
+							<stop offset="0.7142857142857142" stop-color="#7f22cf" />
+						
+							<stop offset="0.8571428571428571" stop-color="#9529e7" />
+						
+							<stop offset="1" stop-color="#ac30ff" />
+						
+					</linearGradient>
+				</defs>
+<g opacity="0.55">
+<circle cx="740" cy="-157" r="303.5" stroke="white"/>
+<circle cx="740" cy="-101" r="303.5" stroke="white"/>
+<circle cx="740" cy="-45" r="303.5" stroke="white"/>
+<circle cx="740" cy="21" r="303.5" stroke="white"/>
+<circle cx="740" cy="87" r="303.5" stroke="white"/>
+<circle cx="714" cy="147" r="303.5" stroke="white"/>
+<circle cx="688" cy="207" r="303.5" stroke="white"/>
+<circle cx="655" cy="270" r="303.5" stroke="white"/>
+<circle cx="622" cy="333" r="303.5" stroke="white"/>
+<circle cx="570" cy="391" r="303.5" stroke="white"/>
+<circle cx="479" cy="451" r="303.5" stroke="white"/>
+<circle cx="410" cy="488" r="303.5" stroke="white"/>
+<circle cx="320" cy="530" r="303.5" stroke="white"/>
+</g>
+</svg>

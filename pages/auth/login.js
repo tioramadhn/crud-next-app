@@ -72,6 +72,8 @@ function Login() {
         const token = await cred.user.getIdToken();
         const cookies = new Cookies();
         cookies.set("session", token, { path: "/" });
+
+        router.replace("/");
         // console.log("user logged in:", cred.user);
       })
       .catch((err) => {
@@ -90,19 +92,19 @@ function Login() {
       });
   };
 
-  useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        router.push("/");
-      }
-    });
-  }, []);
+  // useEffect(() => {
+  //   onAuthStateChanged(auth, (user) => {
+  //     if (user) {
+  //       router.push("/");
+  //     }
+  //   });
+  // }, []);
 
   return (
     <Grid alignItems="center" container mt={8} pt={4}>
       <Box
         sx={{
-          backgroundImage: 'url("/BG.png")',
+          backgroundImage: 'url("/BG.svg")',
           backgroundRepeat: "no-repeat",
           backgroundSize: "cover",
           position: "absolute",
@@ -143,10 +145,10 @@ function Login() {
       >
         <Image
           src="/emojione-monotone_church_white.png"
-          width={25}
-          height={25}
+          width={40}
+          height={40}
         />
-        <Typography variant="h4" color="white" ml={2} fontWeight={700}>
+        <Typography variant="h4" color="white" ml={2} mt={2} fontWeight={700}>
           BNKP EFRATA
         </Typography>
       </Grid>
@@ -195,41 +197,42 @@ function Login() {
             }}
             variant="standard"
           />
-          <TextField
-            {...register("password", { required: "Password wajib di isi" })}
-            error={errors.password ? true : false}
-            helperText={errors.password ? errors.password.message : null}
-            id="input-with-icon-textfield"
-            label="Password"
-            type={values.showPassword ? "text" : "password"}
-            value={values.password}
-            onChange={handleChange("password")}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <HttpsIcon />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label="toggle password visibility"
-                    onClick={handleClickShowPassword}
-                    onMouseDown={handleMouseDownPassword}
-                  >
-                    {values.showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-            variant="standard"
-          />
+          <FormControl>
+            <TextField
+              {...register("password", { required: "Password wajib di isi" })}
+              error={errors.password ? true : false}
+              helperText={errors.password ? errors.password.message : null}
+              id="input-with-icon-textfield"
+              label="Password"
+              type={values.showPassword ? "text" : "password"}
+              value={values.password}
+              onChange={handleChange("password")}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <HttpsIcon />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={handleClickShowPassword}
+                      onMouseDown={handleMouseDownPassword}
+                    >
+                      {values.showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+              variant="standard"
+            />
+          </FormControl>
 
           <Button
+            type="submit"
             disabled={loading ? true : false}
             variant="contained"
-            type="submit"
-            value="submit"
           >
             Masuk
           </Button>
@@ -240,3 +243,21 @@ function Login() {
 }
 
 export default Login;
+
+export async function getServerSideProps({ req, res }) {
+  const sessionCookie = req.cookies.session || "";
+
+  if (sessionCookie) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+      props: {},
+    };
+  }
+
+  return {
+    props: {},
+  };
+}
