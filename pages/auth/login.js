@@ -242,22 +242,4 @@ function Login() {
   );
 }
 
-export default Login;
-
-export async function getServerSideProps({ req, res }) {
-  const sessionCookie = req.cookies.session || "";
-
-  if (sessionCookie) {
-    return {
-      redirect: {
-        destination: "/",
-        permanent: false,
-      },
-      props: {},
-    };
-  }
-
-  return {
-    props: {},
-  };
-}
+export default withPublic(Login);

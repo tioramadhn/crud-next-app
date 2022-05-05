@@ -59,18 +59,18 @@ export default function ButtonAppBar({ user }) {
   };
 
   const handleLogOut = () => {
-    setOpen(false);
     setState({ success: false, loading: true, error: false });
+    setOpen(false);
     signOut(auth)
       .then(() => {
         const cookies = new Cookies();
         cookies.remove("session", { path: "/" });
-        setState({ success: false, loading: false, error: false });
-        router.replace('/auth/login')
+        router.replace("/auth/login");
       })
       .catch((err) => {
         console.log(err.message);
       });
+    setState({ success: false, loading: false, error: false });
   };
 
   const list = (
