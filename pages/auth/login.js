@@ -24,9 +24,15 @@ import { useForm } from "react-hook-form";
 import { onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase/ClientApp";
 import { useRouter } from "next/router";
-
-export default function Login() {
+import { useAuthState } from "react-firebase-hooks/auth";
+import { withPublic } from "../../hooks/auth";
+import Cookies from "universal-cookie";
+import Image from "next/image";
+import { grey } from "@mui/material/colors";
+function Login() {
   const router = useRouter();
+  const [user, authLoading, authError] = useAuthState(auth);
+
   const {
     register,
     handleSubmit,
@@ -39,8 +45,8 @@ export default function Login() {
     showPassword: false,
   });
 
-  const [error, setError] = useState(null)
-  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (prop) => (event) => {
     setValues({ ...values, [prop]: event.target.value });
@@ -58,27 +64,29 @@ export default function Login() {
   };
 
   const onSubmit = (data) => {
-    setLoading(true)
+    setLoading(true);
     const { email, password } = data;
     signInWithEmailAndPassword(auth, email, password)
-      .then((cred) => {
-        setLoading(false)
+      .then(async (cred) => {
+        setLoading(false);
+        const token = await cred.user.getIdToken();
+        const cookies = new Cookies();
+        cookies.set("session", token, { path: "/" });
         // console.log("user logged in:", cred.user);
       })
       .catch((err) => {
-        setLoading(false)
+        setLoading(false);
         console.log(err.message);
 
-        if(err.message.match("auth/invalid-email")){
-          setError("Email tidak valid")
-        }else if(err.message.match("auth/user-not-found")){
-          setError("Email tidak ditemukan")
-        }else if(err.message.match("auth/wrong-password")){
-          setError("Password salah")
-        }else{
-          setError("Terjadi kesalahan")
+        if (err.message.match("auth/invalid-email")) {
+          setError("Email tidak valid");
+        } else if (err.message.match("auth/user-not-found")) {
+          setError("Email tidak ditemukan");
+        } else if (err.message.match("auth/wrong-password")) {
+          setError("Password salah");
+        } else {
+          setError("Terjadi kesalahan");
         }
-
       });
   };
 
@@ -91,21 +99,20 @@ export default function Login() {
   }, []);
 
   return (
-    <Grid
-      justifyContent={"center"}
-      alignItems="center"
-      container
-      sx={{ height: "100vh" }}
-    >
+    <Grid alignItems="center" container mt={8} pt={4}>
       <Box
         sx={{
-          backgroundImage: 'url("/wave.svg")',
+          backgroundImage: 'url("/BG.png")',
           backgroundRepeat: "no-repeat",
+          backgroundSize: "cover",
           position: "absolute",
           top: 0,
           bottom: 0,
           left: 0,
-          right: 0,
+          right: {
+            md: "50%",
+            xs: 0,
+          },
           zIndex: -1,
         }}
       ></Box>
@@ -113,31 +120,66 @@ export default function Login() {
         <title>Login</title>
       </Head>
       <Backdrop
-        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
         open={loading}
       >
         <CircularProgress color="inherit" />
       </Backdrop>
-      <Grid xs={12} md={4} item>
+      <Grid xs={12} md={6} item sx={{ display: { md: "block", xs: "none" } }}>
+        <Image width={69} height={93} src="/salib_white.png" />
+        <Typography variant="h1" color="white" fontWeight={700}>
+          BNKP
+        </Typography>
+        <Typography variant="h1" color="white" fontWeight={700}>
+          EFRATA
+        </Typography>
+      </Grid>
+      <Grid
+        xs={12}
+        mb={4}
+        pl={4}
+        item
+        sx={{ display: { md: "none", xs: "flex" }, alignItems: "center" }}
+      >
+        <Image
+          src="/emojione-monotone_church_white.png"
+          width={25}
+          height={25}
+        />
+        <Typography variant="h4" color="white" ml={2} fontWeight={700}>
+          BNKP EFRATA
+        </Typography>
+      </Grid>
+      <Grid
+        xs={12}
+        md={6}
+        item
+        sx={{ display: "flex", justifyContent: "center" }}
+      >
         <Stack
           spacing={4}
           component="form"
           onSubmit={handleSubmit(onSubmit)}
           sx={{
+            width: "25rem",
             backgroundColor: "white",
-            border: "1px solid #e4e6e7",
             p: 4,
             borderRadius: "1rem",
           }}
         >
-          <Typography variant="h4" textAlign="center">
-            Login
-          </Typography>
-
-         {error && <Alert severity="error">
-            <AlertTitle>{error}</AlertTitle>
-          </Alert>
-          }
+          <Stack>
+            <Typography variant="h4" textAlign="start">
+              Login
+            </Typography>
+            <Typography color={grey[500]} variant="subtitle2" textAlign="start">
+              Selamat datang
+            </Typography>
+          </Stack>
+          {error && (
+            <Alert severity="error">
+              <AlertTitle>{error}</AlertTitle>
+            </Alert>
+          )}
           <TextField
             {...register("email", { required: "Email wajib di isi" })}
             error={errors.email ? true : false}
@@ -183,7 +225,12 @@ export default function Login() {
             variant="standard"
           />
 
-          <Button disabled={loading? true : false} variant="contained" type="submit" value="submit">
+          <Button
+            disabled={loading ? true : false}
+            variant="contained"
+            type="submit"
+            value="submit"
+          >
             Masuk
           </Button>
         </Stack>
@@ -191,3 +238,5 @@ export default function Login() {
     </Grid>
   );
 }
+
+export default Login;

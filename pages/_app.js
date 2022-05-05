@@ -1,4 +1,4 @@
-import { Container } from "@mui/material";
+import { Backdrop, CircularProgress, Container } from "@mui/material";
 import ButtonAppBar from "../components/Navbar";
 import "../styles/globals.css";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
@@ -17,39 +17,31 @@ const theme = createTheme({
 });
 
 function MyApp({ Component, pageProps }) {
-  const router = useRouter()
-  const [nav, setNav] = useState(false)
-  const [user, setUser] = useState()
+  const router = useRouter();
+  const [nav, setNav] = useState(false);
 
-  useEffect(()=> {
+  useEffect(() => {
     onAuthStateChanged(auth, (user) => {
-      if(user){
-        setNav(true)
-        setUser(user)
-      }else{
-        setNav(false)
+      if (user) {
+        setNav(true);
+        if(router.pathname == '/auth/login'){
+          router.replace('/')
+        }
+      } else {
+        setNav(false);
+        router.replace('/auth/login')
       }
-      console.log('user status changed:', user)
-    })
-  },[])
+    });
+  }, []);
 
   return (
     <ThemeProvider theme={theme}>
-     {nav && <ButtonAppBar user={user} />}
+      {nav && <ButtonAppBar/>}
       <Container>
         <Component {...pageProps} />
       </Container>
     </ThemeProvider>
   );
-}
-
-export async function getServerSideProps(ctx) {
-  console.log(ctx.req);
-  return {
-    props: {
-      id: false
-    },
-  };
 }
 
 export default MyApp;

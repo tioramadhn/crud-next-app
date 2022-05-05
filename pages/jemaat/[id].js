@@ -53,10 +53,10 @@ const Detail = ({ id }) => {
     });
 
     onAuthStateChanged(auth, (user) => {
-      if(!user){
-        router.push('/auth/login')
+      if (!user) {
+        router.push("/auth/login");
       }
-    })
+    });
 
     if (user) {
       if (user.foto) {
@@ -68,7 +68,6 @@ const Detail = ({ id }) => {
       }
     }
   }, [user]);
-
 
   const handleDelete = (id) => {
     setOpen(false);
@@ -203,6 +202,9 @@ const Detail = ({ id }) => {
                   NIK
                 </Typography>
                 <Typography variant="body1" component="div">
+                  Nama Ayah/Ibu
+                </Typography>
+                <Typography variant="body1" component="div">
                   Status
                 </Typography>
                 {user.marriedAt && (
@@ -271,6 +273,14 @@ const Detail = ({ id }) => {
                 {user.nik ? (
                   <Typography variant="body1" component="div">
                     {user.nik}
+                  </Typography>
+                ) : (
+                  dataNotSet("Data belum ada")
+                )}
+
+                {user.motherName && user.fatherName? (
+                  <Typography variant="body1" component="div">
+                    {user.fatherName}/{user.motherName}
                   </Typography>
                 ) : (
                   dataNotSet("Data belum ada")
@@ -351,7 +361,18 @@ const Detail = ({ id }) => {
 
 export default Detail;
 
-export async function getServerSideProps({ query }) {
+export async function getServerSideProps({ req, query }) {
+  const sessionCookie = req.cookies.session || "";
+
+  if (!sessionCookie) {
+    return {
+      redirect: {
+        destination: "/auth/login",
+        permanent: false,
+      },
+      props: {},
+    };
+  }
   const { id } = query;
   return {
     props: { id }, // will be passed to the page component as props

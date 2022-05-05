@@ -11,7 +11,9 @@ import {
   RadioGroup,
   Stack,
   TextField,
-  Typography,MuiAlert, Snackbar
+  Typography,
+  MuiAlert,
+  Snackbar,
 } from "@mui/material";
 import Head from "next/head";
 import React, { useEffect, useState } from "react";
@@ -26,7 +28,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/router";
 
 export default function Add() {
-  const router = useRouter()
+  const router = useRouter();
   const colRef = collection(db, "jemaat_users");
   const {
     register,
@@ -46,14 +48,14 @@ export default function Add() {
     } else {
       delete data.moveAt;
     }
-    uploadData(data)
+    uploadData(data);
   };
   const [value, setValue] = useState();
   const [state, setState] = useState({
     loading: false,
     success: false,
-    error: false
-  })
+    error: false,
+  });
 
   const handleKawin = (e) => {
     setValue((prev) => ({ ...prev, kawin: e.target.value }));
@@ -63,64 +65,63 @@ export default function Add() {
   };
 
   const uploadData = (user) => {
-    setState(prev => ({...prev, loading: true}))
-    if(user.foto[0]){
-      const file = user.foto[0]
-      const path = `efrata_photo/${Date.now()}-${user.name}-${file.name}`
-      user.foto = path
+    setState((prev) => ({ ...prev, loading: true }));
+    if (user.foto[0]) {
+      const file = user.foto[0];
+      const path = `efrata_photo/${Date.now()}-${user.name}-${file.name}`;
+      user.foto = path;
       const storageRef = ref(storage, path);
       uploadBytes(storageRef, file)
         .then((snapshot) => {
           console.log("Foto sukses di upload");
         })
         .catch((err) => {
-          setState(prev => ({...prev, loading: false, error: true}))
-          console.log(err.message)
+          setState((prev) => ({ ...prev, loading: false, error: true }));
+          console.log(err.message);
         });
-    }else{
-      delete user.foto
+    } else {
+      delete user.foto;
     }
     addDoc(colRef, {
       ...user,
-      numStambuk: `0924${Date.now()}`
+      numStambuk: `0924${Date.now()}`,
     })
-    .then(() => {
-      reset({ 
-        name: '',
-        birthPlace: '',
-        birthDate: '',
-        nik: '',
-        registerAt: '',
-        baptisAt: '',
-        sidiAt: '',
-        address: '',
-        sector: '',
-        foto: '',
-        marriedAt: '',
-        moveAt: '',
-        deadAt: ''
-       });
-      setState(prev => ({...prev, loading: false, success: true}))
-      console.log('berhasil tambahin data')
-    
-    })
-    .catch((err) => {
-      setState(prev => ({...prev, loading: false, error: true}))
-      console.log(err.message)
-    });
-  }
-
-  const handleClose = () => {
-    setState({success: false, loading: false, error: false})
+      .then(() => {
+        reset({
+          name: "",
+          birthPlace: "",
+          birthDate: "",
+          nik: "",
+          registerAt: "",
+          baptisAt: "",
+          sidiAt: "",
+          address: "",
+          sector: "",
+          foto: "",
+          marriedAt: "",
+          moveAt: "",
+          deadAt: "",
+        });
+        setState((prev) => ({ ...prev, loading: false, success: true }));
+        console.log("berhasil tambahin data");
+      })
+      .catch((err) => {
+        setState((prev) => ({ ...prev, loading: false, error: true }));
+        console.log(err.message);
+      });
   };
 
-  useEffect(()=> {
+  const handleClose = () => {
+    setState({ success: false, loading: false, error: false });
+  };
+
+  useEffect(() => {
     onAuthStateChanged(auth, (user) => {
-      if(!user){
-        router.push('/auth/login')
+      if (!user) {
+        router.push("/auth/login");
       }
-    })
-  },[])
+    });
+  }, []);
 
   return (
     <LocalizationProvider dateAdapter={AdapterMoment}>
@@ -128,18 +129,20 @@ export default function Add() {
         <title>Tambah data</title>
       </Head>
       <Backdrop
-        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
         open={state.loading}
       >
         <CircularProgress color="inherit" />
       </Backdrop>
       <Snackbar
         autoHideDuration={3000}
-        anchorOrigin={ {vertical: 'top', horizontal: 'center'} }
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
         open={state.error || state.success}
         onClose={handleClose}
-        message={state.success? "Data berhasil ditambahkan" : 'Data gagal ditambahkan'}
-        key={'top' + 'center'}
+        message={
+          state.success ? "Data berhasil ditambahkan" : "Data gagal ditambahkan"
+        }
+        key={"top" + "center"}
       />
       <Grid container justifyContent="center" spacing={2} sx={{ py: 4 }}>
         <Grid item xs={12} md={3}>
@@ -203,6 +206,18 @@ export default function Add() {
               label="NIK"
               variant="outlined"
               placeholder="ex: 1405020102011004"
+            />
+
+            <TextField
+              {...register("fatherName")}
+              label="Nama Ayah"
+              variant="outlined"
+            />
+
+            <TextField
+              {...register("motherName")}
+              label="Nama Ibu"
+              variant="outlined"
             />
 
             <TextField
@@ -330,7 +345,7 @@ export default function Add() {
 
             <TextField
               accept="image/*"
-              {...register("foto", {max: 1})}
+              {...register("foto", { max: 1 })}
               error={errors.foto ? true : false}
               helperText={errors.foto ? "max 1 foto" : null}
               label="Upload foto"
@@ -339,7 +354,11 @@ export default function Add() {
                 shrink: true,
               }}
             />
-            <Button type="submit" variant="contained" disabled={state.loading? true:false}>
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={state.loading ? true : false}
+            >
               Tambah data
             </Button>
           </Stack>
@@ -347,4 +366,23 @@ export default function Add() {
       </Grid>
     </LocalizationProvider>
   );
+}
+
+export async function getServerSideProps({ req, res }) {
+  const sessionCookie = req.cookies.session || "";
+
+  if (!sessionCookie) {
+    return {
+      redirect: {
+        destination: "/auth/login",
+        permanent: false,
+      },
+      props: {},
+    };
+  }
+  return{
+    props: {
+      
+    }
+  }
 }

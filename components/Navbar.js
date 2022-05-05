@@ -1,4 +1,3 @@
-import * as React from "react";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
@@ -7,7 +6,14 @@ import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
 import {
+  Backdrop,
+  CircularProgress,
   Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Divider,
   Drawer,
   List,
@@ -23,11 +29,23 @@ import Link from "next/link";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase/ClientApp";
+import { useState } from "react";
+import Cookies from "universal-cookie";
 
 export default function ButtonAppBar({ user }) {
   const router = useRouter();
+  const [state, setState] = useState({
+    loading: false,
+    success: false,
+    error: false,
+  });
+  const [open, setOpen] = useState(false);
+  const [drawer, setDrawer] = useState(false);
 
-  const [drawer, setDrawer] = React.useState(false);
+  const handleClose = () => {
+    setOpen(false);
+    setState({ success: false, loading: false, error: false });
+  };
 
   const toggleDrawer = (open) => (event) => {
     if (
@@ -41,8 +59,13 @@ export default function ButtonAppBar({ user }) {
   };
 
   const handleLogOut = () => {
+    setOpen(false);
+    setState({ success: false, loading: true, error: false });
     signOut(auth)
       .then(() => {
+        const cookies = new Cookies();
+        cookies.remove("session");
+        setState({ success: false, loading: false, error: false });
         console.log("user signed out");
       })
       .catch((err) => {
@@ -86,7 +109,7 @@ export default function ButtonAppBar({ user }) {
         </Link>
 
         <Divider />
-        <ListItem button onClick={handleLogOut}>
+        <ListItem button onClick={() => setOpen(true)}>
           <ListItemIcon>
             <LogoutIcon />
           </ListItemIcon>
@@ -98,6 +121,33 @@ export default function ButtonAppBar({ user }) {
 
   return (
     <Box sx={{ flexGrow: 1, transition: "3s" }}>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"Apakah anda yakin ingin keluar ?"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Klik lanjut untuk keluar
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>batal</Button>
+          <Button onClick={handleLogOut} autoFocus>
+            lanjut
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Backdrop
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={state.loading}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
       <Drawer anchor={"left"} open={drawer} onClose={toggleDrawer(false)}>
         {list}
       </Drawer>
@@ -117,11 +167,9 @@ export default function ButtonAppBar({ user }) {
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               BNKP EFRATA
             </Typography>
-            {user && (
-              <Typography variant="h6" component="div">
-                Hi, Admin
-              </Typography>
-            )}
+            <Typography variant="h6" component="div">
+              Hi, Admin
+            </Typography>
           </Toolbar>
         </Container>
       </AppBar>

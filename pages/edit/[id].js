@@ -231,6 +231,18 @@ export default function EditById({ id }) {
               />
 
               <TextField
+                {...register("fatherName")}
+                label="Nama Ayah"
+                variant="outlined"
+              />
+
+              <TextField
+                {...register("motherName")}
+                label="Nama Ibu"
+                variant="outlined"
+              />
+
+              <TextField
                 {...register("registerAt")}
                 defaultValue={user.registerAt}
                 id="date"
@@ -399,7 +411,18 @@ export default function EditById({ id }) {
   );
 }
 
-export async function getServerSideProps({ query }) {
+export async function getServerSideProps({ req, query }) {
+  const sessionCookie = req.cookies.session || "";
+
+  if (!sessionCookie) {
+    return {
+      redirect: {
+        destination: "/auth/login",
+        permanent: false,
+      },
+      props: {},
+    };
+  }
   const { id } = query;
   return {
     props: { id }, // will be passed to the page component as props

@@ -80,9 +80,7 @@ export default function Jemaat() {
     })
   },[])
 
-  const handleDetail = (id) => {
-    router.push(`/jemaat/${id}`);
-  };
+
 
   const getFoto = async (path, key) => {
     const res = await getDownloadURL(ref(storage, path));
@@ -217,4 +215,24 @@ export default function Jemaat() {
       </Grid>
     </div>
   );
+}
+
+
+export async function getServerSideProps({req, res}){
+  const sessionCookie = req.cookies.session || '';
+
+  if(!sessionCookie){
+    return{
+      redirect:{
+        destination: '/auth/login',
+        permanent: false
+      },
+      props: {}
+    }
+  }
+  return{
+    props: {
+      
+    }
+  }
 }

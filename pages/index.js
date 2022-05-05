@@ -15,8 +15,9 @@ import { auth, db } from "../firebase/ClientApp";
 import { useEffect, useState } from "react";
 import { collection, onSnapshot, query, getDocs } from "firebase/firestore";
 import { getAge } from "../utils/date";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import { useRouter } from "next/router";
+import { useAuthState } from "react-firebase-hooks/auth";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 const Item = styled(Paper)(({ theme }) => ({
@@ -30,7 +31,7 @@ const Item = styled(Paper)(({ theme }) => ({
 export default function Home({data}) {
   const router = useRouter()
    const [user, setUser] = useState(data);
-   
+  
    const [size, setSize] = useState({
      aktif: 0,
      pindah: 0,
@@ -43,10 +44,6 @@ export default function Home({data}) {
      lansia: 0,
    })
  
-  //  useEffect(() => {
-    
-    
-  //  }, [user, size]);
 
    useEffect(()=> {
     if(user){
@@ -73,11 +70,11 @@ export default function Home({data}) {
           lansia: sizeLansia.length
         })
     }
-    onAuthStateChanged(auth, (user) => {
-      if(!user){
-        router.push('/auth/login')
-      }
-    })
+    // onAuthStateChanged(auth, (user) => {
+    //   if(!user){
+    //     router.push('/auth/login')
+    //   }
+    // })
   },[])
 
    const dataJK = {
@@ -214,26 +211,30 @@ export default function Home({data}) {
 }
 
 
-export async function getServerSideProps(){
+export async function getServerSideProps({req, res}){
+  const sessionCookie = req.cookies.session || '';
+
+  if(!sessionCookie){
+    return{
+      redirect:{
+        destination: '/auth/login',
+        permanent: false
+      },
+      props: {}
+    }
+  }
+
   // collection ref
   const colRef = collection(db, "jemaat_users");
   const q = query(colRef);
 
   let data = [];
-   // realtime collection data
-  //  onSnapshot(q, (snapshot) => {
-  //   snapshot.docs.forEach((doc) => {
-  //     data.push({ ...doc.data(), id: doc.id });
-  //   });
-  // });
 
   const querySnapshot = await getDocs(colRef);
   querySnapshot.forEach((doc) => {
     // doc.data() is never undefined for query doc snapshots
     data.push({ ...doc.data(), id: doc.id });
   });
-  
-  
 
   return{
     props: {
