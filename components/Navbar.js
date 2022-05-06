@@ -6,6 +6,7 @@ import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
 import {
+  Alert,
   Backdrop,
   CircularProgress,
   Container,
@@ -16,10 +17,17 @@ import {
   DialogTitle,
   Divider,
   Drawer,
+  FormControl,
+  Input,
+  InputAdornment,
+  InputLabel,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
+  Modal,
+  OutlinedInput,
+  Snackbar,
 } from "@mui/material";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import HomeIcon from "@mui/icons-material/Home";
@@ -27,10 +35,20 @@ import { useRouter } from "next/router";
 import GroupsIcon from "@mui/icons-material/Groups";
 import Link from "next/link";
 import LogoutIcon from "@mui/icons-material/Logout";
-import { signOut } from "firebase/auth";
-import { auth } from "../firebase/ClientApp";
+import {
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  signOut,
+  updatePassword,
+} from "firebase/auth";
+import { auth, db } from "../firebase/ClientApp";
 import { useState } from "react";
 import Cookies from "universal-cookie";
+import { collection, getDocs } from "firebase/firestore";
+import csvDownload from "json-to-csv-export";
+import GetAppIcon from "@mui/icons-material/GetApp";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import LockResetIcon from '@mui/icons-material/LockReset';
 
 export default function ButtonAppBar({ user }) {
   const router = useRouter();
@@ -73,6 +91,17 @@ export default function ButtonAppBar({ user }) {
     setState({ success: false, loading: false, error: false });
   };
 
+  const handleExport = async () => {
+    setState({ success: false, loading: true, error: false });
+    let data = [];
+    const querySnapshot = await getDocs(collection(db, "jemaat_users"));
+    querySnapshot.forEach((doc) => {
+      data.push({ ...doc.data(), id: doc.id });
+    });
+    setState({ success: false, loading: false, error: false });
+    csvDownload(data);
+  };
+
   const list = (
     <Box
       sx={{ width: 250 }}
@@ -109,6 +138,22 @@ export default function ButtonAppBar({ user }) {
         </Link>
 
         <Divider />
+        <ListItem button onClick={() => setOpenModal(true)}>
+          <ListItemIcon>
+            <LockResetIcon />
+          </ListItemIcon>
+          <ListItemText primary={"Ubah password"} />
+        </ListItem>
+
+        <Divider />
+        <ListItem button onClick={handleExport}>
+          <ListItemIcon>
+            <GetAppIcon />
+          </ListItemIcon>
+          <ListItemText primary={"Export CSV"} />
+        </ListItem>
+
+        <Divider />
         <ListItem button onClick={() => setOpen(true)}>
           <ListItemIcon>
             <LogoutIcon />
@@ -118,9 +163,167 @@ export default function ButtonAppBar({ user }) {
       </List>
     </Box>
   );
+  const style = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: 400,
+    bgcolor: "background.paper",
+    border: "2px solid #000",
+    boxShadow: 24,
+    p: 4,
+  };
+  const [openModal, setOpenModal] = useState(false);
+  const handleCloseModal = () => setOpenModal(false);
 
+  const [password, setPassword] = useState({
+    valueLama: "",
+    showLama: false,
+    valueBaru: "",
+    showBaru: false,
+  });
+
+  const handleClickShowPasswordLama = () => {
+    setPassword({
+      ...password,
+      showLama: !password.showLama,
+    });
+  };
+
+ 
+  const handleClickShowPasswordBaru = () => {
+    setPassword({
+      ...password,
+      showBaru: !password.showBaru,
+    });
+  };
+
+  const handleMouseDownPassword = (event) => {
+    event.preventDefault();
+  };
+
+  const handleChange = (prop) => (event) => {
+    setPassword({ ...password, [prop]: event.target.value });
+  };
+
+  const handleUbahPassword = async () => {
+    setState({ success: false, loading: true, error: null });
+    const user = auth.currentUser;
+    console.log(password.valueLama, password.valueBaru);
+    const credential = EmailAuthProvider.credential(
+      user.email,
+      password.valueLama
+    );
+
+    if (password.valueLama && password.valueBaru ) {
+      reauthenticateWithCredential(user, credential)
+        .then(() => {
+          // User re-authenticated.
+          updatePassword(user, password.valueBaru)
+            .then(() => {
+              setState({ success: true, loading: false, error: null });
+              console.log("success change password");
+              setOpenModal(false);
+            })
+            .catch((error) => {
+              setState({
+                success: false,
+                loading: false,
+                error: "Password minimal 6 karakter",
+              });
+              console.log(error.message);
+            });
+        })
+        .catch((error) => {
+          console.log("gagal auth");
+          setState({
+            success: false,
+            loading: false,
+            error: "Password lama salah",
+          });
+        });
+    } else {
+      console.log('kosong')
+      setState({
+        success: false,
+        loading: false,
+        error: "Tidak ada data yang dimasukkan",
+      });
+    }
+
+  };
   return (
     <Box sx={{ flexGrow: 1, transition: "3s" }}>
+      <Snackbar
+        autoHideDuration={3000}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        open={state.success}
+        onClose={handleClose}
+        message={state.success ? "Password berhasil di ubah" : null}
+        key={"top" + "center"}
+      />
+      <Modal
+        open={openModal}
+        onClose={handleCloseModal}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+
+          <Typography id="modal-modal-title" variant="h6" component="h2">
+            Ubah password
+          </Typography>
+
+          {state.error && <Alert severity="error">{state.error}</Alert>}
+
+        <FormControl sx={{ mt: 2, width: '100%' }} variant="standard">
+          <InputLabel htmlFor="password-lama">Password lama</InputLabel>
+          <Input
+            id="password-lama"
+            type={password.showLama ? 'text' : 'password'}
+            value={password.valueLama}
+            onChange={handleChange('valueLama')}
+            endAdornment={
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="toggle password visibility"
+                  onClick={handleClickShowPasswordLama}
+                  onMouseDown={handleMouseDownPassword}
+                >
+                  {password.showLama? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            }
+          />
+        </FormControl>
+
+        <FormControl sx={{ my: 2, width: '100%' }} variant="standard">
+          <InputLabel htmlFor="password-baru">Password baru</InputLabel>
+          <Input
+            id="password-baru"
+            type={password.showBaru ? 'text' : 'password'}
+            value={password.password}
+            onChange={handleChange('valueBaru')}
+            endAdornment={
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="toggle password visibility"
+                  onClick={handleClickShowPasswordBaru}
+                  onMouseDown={handleMouseDownPassword}
+                >
+                  {password.showBaru ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            }
+          />
+        </FormControl>
+
+          <Button sx={{ float: "right" }} disabled={state.loading} onClick={handleUbahPassword}>
+            Simpan
+          </Button>
+        </Box>
+      </Modal>
       <Dialog
         open={open}
         onClose={handleClose}
@@ -143,7 +346,7 @@ export default function ButtonAppBar({ user }) {
         </DialogActions>
       </Dialog>
       <Backdrop
-        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.modal + 1 }}
         open={state.loading}
       >
         <CircularProgress color="inherit" />
