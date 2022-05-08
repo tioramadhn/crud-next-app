@@ -196,7 +196,7 @@ const Detail = ({ id }) => {
                   Jenis Kelamin
                 </Typography>
                 <Typography variant="body1" component="div">
-                  TTL
+                  Tempat, Tanggal Lahir
                 </Typography>
                 <Typography variant="body1" component="div">
                   NIK
