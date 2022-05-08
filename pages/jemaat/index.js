@@ -56,7 +56,6 @@ export default function Jemaat() {
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    // realtime collection data
     onSnapshot(q, (snapshot) => {
       let data = [];
       snapshot.docs.forEach((doc) => {
