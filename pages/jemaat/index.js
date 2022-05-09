@@ -11,7 +11,6 @@ import {
 } from "@mui/material";
 import Head from "next/head";
 import Link from "next/link";
-import AddIcon from "@mui/icons-material/Add";
 import { useEffect, useState } from "react";
 import { auth, db, storage } from "../../firebase/ClientApp";
 import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
@@ -28,8 +27,11 @@ import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import FormControl from "@mui/material/FormControl";
-import FormLabel from "@mui/material/FormLabel";
 import { getAge } from "../../utils/date";
+import { jsPDF } from "jspdf";
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import { red } from "@mui/material/colors";
+
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
   ...theme.typography.body2,
@@ -69,28 +71,32 @@ export default function Jemaat({ data }) {
 
       if (filter.kategori == "anak") {
         result = user.filter((i) => getAge(i.birthDate) <= 12);
-        if(key){
+        if (key) {
           result = result.filter((i) => i.name.toLowerCase().indexOf(key) > -1);
         }
       }
 
       if (filter.kategori == "remaja") {
-        result = user.filter((i) => getAge(i.birthDate) > 12 && getAge(i.birthDate) <= 18);
-        if(key){
+        result = user.filter(
+          (i) => getAge(i.birthDate) > 12 && getAge(i.birthDate) <= 18
+        );
+        if (key) {
           result = result.filter((i) => i.name.toLowerCase().indexOf(key) > -1);
         }
       }
 
       if (filter.kategori == "dewasa") {
-        result = user.filter((i) => getAge(i.birthDate) > 18 && getAge(i.birthDate) <= 60);
-        if(key){
+        result = user.filter(
+          (i) => getAge(i.birthDate) > 18 && getAge(i.birthDate) <= 60
+        );
+        if (key) {
           result = result.filter((i) => i.name.toLowerCase().indexOf(key) > -1);
         }
       }
 
       if (filter.kategori == "lansia") {
         result = user.filter((i) => getAge(i.birthDate) > 60);
-        if(key){
+        if (key) {
           result = result.filter((i) => i.name.toLowerCase().indexOf(key) > -1);
         }
       }
@@ -107,7 +113,7 @@ export default function Jemaat({ data }) {
       setNotFound(false);
       setSearch(null);
     }
-    console.log(filter);
+    // console.log(filter);
   }, [search, notFound, key, filter]);
 
   useEffect(() => {
@@ -134,6 +140,62 @@ export default function Jemaat({ data }) {
     setKey(key);
   };
 
+  const handlePdf = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(22);
+    doc.text("BNKP EFRATA", 20, 20);
+    
+    doc.setFontSize(16);
+    doc.text("Berikut adalah daftar jemaat", 20, 30);
+
+    var generateData = function(amount) {
+      var result = [];
+      var data = {
+        coin: "100",
+        game_group: "GameGroup",
+        game_name: "XPTO2",
+        game_version: "25",
+        machine: "20485861",
+        vlt: "0"
+      };
+      for (var i = 0; i < amount; i += 1) {
+        data.id = (i + 1).toString();
+        result.push(Object.assign({}, data));
+      }
+      // console.log(result)
+      return result;
+    };
+    
+    function createHeaders(keys) {
+      var result = [];
+      for (var i = 0; i < keys.length; i += 1) {
+        result.push({
+          id: keys[i],
+          name: keys[i],
+          prompt: keys[i],
+          width: 65,
+          align: "center",
+          padding: 0
+        });
+      }
+      return result;
+    }
+    
+    var headers = createHeaders([
+      "id",
+      "coin",
+      "game_group",
+      "game_name",
+      "game_version",
+      "machine",
+      "vlt"
+    ]);
+
+    doc.table(20,40, generateData(100), headers, { autoSize: true });
+
+    doc.save("efrata_jemaat.pdf")
+  }
+
   return (
     <div>
       <Head>
@@ -159,6 +221,7 @@ export default function Jemaat({ data }) {
           <Divider sx={{ my: 2 }} />
 
           <Stack spacing={2}>
+            <Stack spacing={2} direction="row">
             <Button
               sx={{ width: "max-content", height: "max-content" }}
               onClick={() => setOpen(!open)}
@@ -167,6 +230,17 @@ export default function Jemaat({ data }) {
             >
               Filter By
             </Button>
+
+            <Button
+              sx={{ width: "max-content", height: "max-content" }}
+              onClick={() => handlePdf()}
+              endIcon={<PictureAsPdfIcon />}
+              variant="outlined"
+            >
+              Unduh PDF
+            </Button>
+            </Stack>
+           
 
             {open && (
               <FormControl>
