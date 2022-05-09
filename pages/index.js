@@ -1,15 +1,12 @@
-import {
-  Grid,
-  Typography,
-} from "@mui/material";
+import { Grid, Typography } from "@mui/material";
 import Head from "next/head";
 import { styled } from "@mui/material/styles";
 import Paper from "@mui/material/Paper";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Doughnut } from "react-chartjs-2";
 import AccessibilityNewIcon from "@mui/icons-material/AccessibilityNew";
-import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
-import CloudOffIcon from '@mui/icons-material/CloudOff';
+import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
+import CloudOffIcon from "@mui/icons-material/CloudOff";
 import { Box } from "@mui/system";
 import { auth, db } from "../firebase/ClientApp";
 import { useEffect, useState } from "react";
@@ -28,65 +25,64 @@ const Item = styled(Paper)(({ theme }) => ({
   color: theme.palette.text.secondary,
 }));
 
-export default function Home({data}) {
-  const router = useRouter()
-   const [user, setUser] = useState(data);
-  
-   const [size, setSize] = useState({
-     aktif: 0,
-     pindah: 0,
-     meninggal: 0,
-     lakiLaki: 0,
-     perempuan: 0,
-     remaja: 0,
-     anakAnak: 0,
-     dewasa: 0,
-     lansia: 0,
-   })
- 
+export default function Home({ data }) {
+  const router = useRouter();
+  const [user, setUser] = useState(data);
 
-   useEffect(()=> {
-    if(user){
-      const sizeAktif = user.filter(item => item.status == "Aktif")
-      const sizePindah = user.filter(item => item.status == "Pindah")
-      const sizeMeninggal = user.filter(item => item.status == "Meninggal")
-      const sizeLaki = user.filter(item => item.gender == "Laki-laki")
-      const sizePerempuan = user.filter(item => item.gender == "Perempuan")
-      const sizeAnak = user.filter(item => getAge(item.birthDate) <= 12)
-      const sizeRemaja = user.filter(item => getAge(item.birthDate) > 12 && getAge(item.birthDate) <= 18)
-      const sizeDewasa = user.filter(item =>  getAge(item.birthDate) > 18 && getAge(item.birthDate) <= 60)
-      const sizeLansia = user.filter(item =>  getAge(item.birthDate) > 60)
-     //  console.log(sizeAktif.length)
-      setSize(
-        {
-          aktif: sizeAktif.length,
-          pindah: sizePindah.length,
-          meninggal: sizeMeninggal.length,
-          lakiLaki: sizeLaki.length,
-          perempuan: sizePerempuan.length,
-          anakAnak: sizeAnak.length,
-          remaja: sizeRemaja.length,
-          dewasa: sizeDewasa.length,
-          lansia: sizeLansia.length
-        })
+  const [size, setSize] = useState({
+    aktif: 0,
+    pindah: 0,
+    meninggal: 0,
+    lakiLaki: 0,
+    perempuan: 0,
+    remaja: 0,
+    anakAnak: 0,
+    dewasa: 0,
+    lansia: 0,
+  });
+
+  useEffect(() => {
+    if (user) {
+      const sizeAktif = user.filter((item) => item.status == "Aktif");
+      const sizePindah = user.filter((item) => item.status == "Pindah");
+      const sizeMeninggal = user.filter((item) => item.status == "Meninggal");
+      const sizeLaki = user.filter((item) => item.gender == "Laki-laki");
+      const sizePerempuan = user.filter((item) => item.gender == "Perempuan");
+      const sizeAnak = user.filter((item) => getAge(item.birthDate) <= 12);
+      const sizeRemaja = user.filter(
+        (item) => getAge(item.birthDate) > 12 && getAge(item.birthDate) <= 18
+      );
+      const sizeDewasa = user.filter(
+        (item) => getAge(item.birthDate) > 18 && getAge(item.birthDate) <= 60
+      );
+      const sizeLansia = user.filter((item) => getAge(item.birthDate) > 60);
+      //  console.log(sizeAktif.length)
+      setSize({
+        aktif: sizeAktif.length,
+        pindah: sizePindah.length,
+        meninggal: sizeMeninggal.length,
+        lakiLaki: sizeLaki.length,
+        perempuan: sizePerempuan.length,
+        anakAnak: sizeAnak.length,
+        remaja: sizeRemaja.length,
+        dewasa: sizeDewasa.length,
+        lansia: sizeLansia.length,
+      });
     }
     // onAuthStateChanged(auth, (user) => {
     //   if(!user){
     //     router.push('/auth/login')
     //   }
     // })
-  },[])
+  }, []);
 
-   const dataJK = {
+  const dataJK = {
     labels: ["Laki-Laki", "Perempuan"],
     datasets: [
       {
         label: "Jenis Kelamin",
         data: [size.lakiLaki, size.perempuan],
-        backgroundColor: [
-          "rgb(255, 99, 132)",
-          "rgb(54, 162, 235)",
-        ],
+        backgroundColor: ["rgb(255, 99, 132)", "rgb(54, 162, 235)"],
         hoverOffset: 4,
       },
     ],
@@ -107,24 +103,29 @@ export default function Home({data}) {
       },
     ],
   };
-  
- 
+
   return (
     <div>
       <Head>
         <title>Beranda</title>
       </Head>
       <Grid my={2} justifyContent="center" container spacing={2}>
-      <Grid xs={12} item md={3}>
+        <Grid xs={12} item md={3}>
           <Item
             sx={{
-            backgroundColor: '#9C0AFF',
+              backgroundColor: "#9C0AFF",
               color: "white",
               textAlign: "start",
               padding: "16px",
             }}
           >
-            <Box sx={{ display: "flex", justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
               <Box>
                 <Typography variant="h4" component="h2">
                   {size.aktif}
@@ -133,8 +134,18 @@ export default function Home({data}) {
                   Jemaat Aktif
                 </Typography>
               </Box>
-              <Box sx={{width: '4rem', height: '4rem',backgroundColor: 'white', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
-              <AccessibilityNewIcon sx={{ fontSize: 40, color: '#9C0AFF' }}/>
+              <Box
+                sx={{
+                  width: "4rem",
+                  height: "4rem",
+                  backgroundColor: "white",
+                  borderRadius: "50%",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <AccessibilityNewIcon sx={{ fontSize: 40, color: "#9C0AFF" }} />
               </Box>
             </Box>
           </Item>
@@ -142,23 +153,39 @@ export default function Home({data}) {
         <Grid xs={12} item md={3}>
           <Item
             sx={{
-            backgroundColor: '#FE306F',
+              backgroundColor: "#FE306F",
               color: "white",
               textAlign: "start",
               padding: "16px",
             }}
           >
-            <Box sx={{ display: "flex", justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
               <Box>
                 <Typography variant="h4" component="h2">
-                {size.pindah}
+                  {size.pindah}
                 </Typography>
                 <Typography variant="subtitle2" component="h2">
                   Jemaat Pindah
                 </Typography>
               </Box>
-              <Box sx={{width: '4rem', height: '4rem',backgroundColor: 'white', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
-              <PersonRemoveIcon sx={{ fontSize: 40, color: '#FE306F' }}/>
+              <Box
+                sx={{
+                  width: "4rem",
+                  height: "4rem",
+                  backgroundColor: "white",
+                  borderRadius: "50%",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <PersonRemoveIcon sx={{ fontSize: 40, color: "#FE306F" }} />
               </Box>
             </Box>
           </Item>
@@ -166,23 +193,39 @@ export default function Home({data}) {
         <Grid xs={12} item md={3}>
           <Item
             sx={{
-            backgroundColor: '#F96E41',
+              backgroundColor: "#F96E41",
               color: "white",
               textAlign: "start",
               padding: "16px",
             }}
           >
-            <Box sx={{ display: "flex", justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
               <Box>
                 <Typography variant="h4" component="h2">
-                {size.meninggal}
+                  {size.meninggal}
                 </Typography>
                 <Typography variant="subtitle2" component="h2">
                   Jemaat Meninggal
                 </Typography>
               </Box>
-              <Box sx={{width: '4rem', height: '4rem',backgroundColor: 'white', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
-              <CloudOffIcon sx={{ fontSize: 40, color: '#F96E41' }}/>
+              <Box
+                sx={{
+                  width: "4rem",
+                  height: "4rem",
+                  backgroundColor: "white",
+                  borderRadius: "50%",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <CloudOffIcon sx={{ fontSize: 40, color: "#F96E41" }} />
               </Box>
             </Box>
           </Item>
@@ -210,18 +253,17 @@ export default function Home({data}) {
   );
 }
 
+export async function getServerSideProps({ req, res }) {
+  const sessionCookie = req.cookies.session || "";
 
-export async function getServerSideProps({req, res}){
-  const sessionCookie = req.cookies.session || '';
-
-  if(!sessionCookie){
-    return{
-      redirect:{
-        destination: '/auth/login',
-        permanent: false
+  if (!sessionCookie) {
+    return {
+      redirect: {
+        destination: "/auth/login",
+        permanent: false,
       },
-      props: {}
-    }
+      props: {},
+    };
   }
 
   // collection ref
@@ -236,9 +278,9 @@ export async function getServerSideProps({req, res}){
     data.push({ ...doc.data(), id: doc.id });
   });
 
-  return{
+  return {
     props: {
-      data
-    }
-  }
+      data,
+    },
+  };
 }

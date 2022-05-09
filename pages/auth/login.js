@@ -79,7 +79,6 @@ function Login() {
           },
           body: JSON.stringify({token})
         })
-        router.replace("/");
       })
       .catch((err) => {
         setLoading(false);

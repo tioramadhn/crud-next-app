@@ -14,13 +14,7 @@ import Link from "next/link";
 import AddIcon from "@mui/icons-material/Add";
 import { useEffect, useState } from "react";
 import { auth, db, storage } from "../../firebase/ClientApp";
-import {
-  collection,
-  onSnapshot,
-  orderBy,
-  query,
-  where,
-} from "firebase/firestore";
+import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
 import SearchIcon from "@mui/icons-material/Search";
 import { styled } from "@mui/material/styles";
 import Paper from "@mui/material/Paper";
@@ -29,7 +23,13 @@ import { useRouter } from "next/router";
 import { getDownloadURL, ref } from "firebase/storage";
 import { useDownloadURL } from "react-firebase-hooks/storage";
 import { onAuthStateChanged } from "firebase/auth";
-
+import FilterListIcon from "@mui/icons-material/FilterList";
+import Radio from "@mui/material/Radio";
+import RadioGroup from "@mui/material/RadioGroup";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import FormControl from "@mui/material/FormControl";
+import FormLabel from "@mui/material/FormLabel";
+import { getAge } from "../../utils/date";
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
   ...theme.typography.body2,
@@ -44,53 +44,57 @@ const Item = styled(Paper)(({ theme }) => ({
   },
 }));
 
-export default function Jemaat() {
+export default function Jemaat({ data }) {
   const router = useRouter();
-  const colRef = collection(db, "jemaat_users");
-  const [q, setQ] = useState(query(colRef));
 
-  const [user, setUser] = useState();
+  const [user, setUser] = useState(data);
   const [foto, setFoto] = useState([]);
 
   const [search, setSearch] = useState();
   const [notFound, setNotFound] = useState(false);
 
-  useEffect(() => {
-    onSnapshot(q, (snapshot) => {
-      let data = [];
-      snapshot.docs.forEach((doc) => {
-        data.push({ ...doc.data(), id: doc.id });
-      });
-      setUser(data);
-    });
-
-    if (user) {
-      user.forEach((e) => {
-        if (e.foto) {
-          getFoto(e.foto, e.id);
-        }
-      });
-    }
-  }, [user, q, search, notFound, foto]);
+  const [key, setKey] = useState();
+  const [open, setOpen] = useState(false);
+  const [filter, setFilter] = useState({
+    kategori: "all",
+  });
 
   useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        router.push("/auth/login");
+    if (key || filter.kategori != "all") {
+      let result = [];
+
+      if (key) {
+        result = user.filter((i) => i.name.toLowerCase().indexOf(key) > -1);
       }
-    });
-    console.log(user, foto);
-  }, []);
 
-  const getFoto = async (path, key) => {
-    const res = await getDownloadURL(ref(storage, path));
-    setFoto((prev) => ({ ...prev, [key]: res }));
-  };
+      if (filter.kategori == "anak") {
+        result = user.filter((i) => getAge(i.birthDate) <= 12);
+        if(key){
+          result = result.filter((i) => i.name.toLowerCase().indexOf(key) > -1);
+        }
+      }
 
-  const handleSearch = (e) => {
-    const key = e.target.value.toLowerCase();
-    if (key) {
-      const result = user.filter((i) => i.name.toLowerCase().indexOf(key) > -1);
+      if (filter.kategori == "remaja") {
+        result = user.filter((i) => getAge(i.birthDate) > 12 && getAge(i.birthDate) <= 18);
+        if(key){
+          result = result.filter((i) => i.name.toLowerCase().indexOf(key) > -1);
+        }
+      }
+
+      if (filter.kategori == "dewasa") {
+        result = user.filter((i) => getAge(i.birthDate) > 18 && getAge(i.birthDate) <= 60);
+        if(key){
+          result = result.filter((i) => i.name.toLowerCase().indexOf(key) > -1);
+        }
+      }
+
+      if (filter.kategori == "lansia") {
+        result = user.filter((i) => getAge(i.birthDate) > 60);
+        if(key){
+          result = result.filter((i) => i.name.toLowerCase().indexOf(key) > -1);
+        }
+      }
+
       if (result.length != 0) {
         setSearch(result);
         setNotFound(false);
@@ -102,8 +106,32 @@ export default function Jemaat() {
     } else {
       setNotFound(false);
       setSearch(null);
-      setQ(query(colRef));
     }
+    console.log(filter);
+  }, [search, notFound, key, filter]);
+
+  useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        router.push("/auth/login");
+      }
+    });
+
+    if (user) {
+      user.forEach(async (e) => {
+        if (e.foto) {
+          const res = await getDownloadURL(ref(storage, e.foto));
+          setFoto((prev) => ({ ...prev, [e.id]: res }));
+        }
+      });
+    }
+
+    // console.log(user, foto);
+  }, []);
+
+  const handleSearch = (e) => {
+    const key = e.target.value.toLowerCase();
+    setKey(key);
   };
 
   return (
@@ -128,7 +156,57 @@ export default function Jemaat() {
               variant="outlined"
             />
           </Stack>
-          <Divider sx={{ mt: 2 }} />
+          <Divider sx={{ my: 2 }} />
+
+          <Stack spacing={2}>
+            <Button
+              sx={{ width: "max-content", height: "max-content" }}
+              onClick={() => setOpen(!open)}
+              endIcon={<FilterListIcon />}
+              variant="contained"
+            >
+              Filter By
+            </Button>
+
+            {open && (
+              <FormControl>
+                <RadioGroup
+                  row
+                  onChange={(e) => {
+                    setFilter({ [e.target.name]: e.target.value });
+                  }}
+                  defaultValue={filter.kategori ?? ""}
+                  name="kategori"
+                >
+                  <FormControlLabel
+                    value="all"
+                    control={<Radio />}
+                    label="Semua"
+                  />
+                  <FormControlLabel
+                    value="anak"
+                    control={<Radio />}
+                    label="Anak-anak"
+                  />
+                  <FormControlLabel
+                    value="remaja"
+                    control={<Radio />}
+                    label="Remaja"
+                  />
+                  <FormControlLabel
+                    value="dewasa"
+                    control={<Radio />}
+                    label="Dewasa"
+                  />
+                  <FormControlLabel
+                    value="lansia"
+                    control={<Radio />}
+                    label="Lansia"
+                  />
+                </RadioGroup>
+              </FormControl>
+            )}
+          </Stack>
         </Grid>
 
         {user && search == null ? (
@@ -151,7 +229,11 @@ export default function Jemaat() {
                     )}
 
                     <Box>
-                      <Typography variant="subtitle2">{item.name.length > 15 ? `${item.name.substring(0, 15)}...` : item.name}</Typography>
+                      <Typography variant="subtitle2">
+                        {item.name.length > 15
+                          ? `${item.name.substring(0, 15)}...`
+                          : item.name}
+                      </Typography>
                       <Typography variant="subtitle1">
                         Jemaat {item.status}
                       </Typography>
@@ -180,7 +262,11 @@ export default function Jemaat() {
                       />
                     )}
                     <Box>
-                      <Typography variant="subtitle2">{item.name.length > 15 ? `${item.name.substring(0, 15)}...` : item.name}</Typography>
+                      <Typography variant="subtitle2">
+                        {item.name.length > 15
+                          ? `${item.name.substring(0, 15)}...`
+                          : item.name}
+                      </Typography>
                       <Typography variant="subtitle1">
                         Jemaat {item.status}
                       </Typography>
@@ -234,7 +320,19 @@ export async function getServerSideProps({ req, res }) {
       props: {},
     };
   }
+
+  // collection ref
+  const colRef = collection(db, "jemaat_users");
+
+  let data = [];
+  let dataFoto = [];
+  const querySnapshot = await getDocs(colRef);
+  querySnapshot.forEach((doc) => {
+    // doc.data() is never undefined for query doc snapshots
+    data.push({ ...doc.data(), id: doc.id });
+  });
+
   return {
-    props: {},
+    props: { data },
   };
 }
