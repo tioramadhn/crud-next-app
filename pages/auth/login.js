@@ -29,6 +29,8 @@ import { withPublic } from "../../hooks/auth";
 import Cookies from "universal-cookie";
 import Image from "next/image";
 import { grey } from "@mui/material/colors";
+import moment from 'moment'
+
 function Login() {
   const router = useRouter();
   const [user, authLoading, authError] = useAuthState(auth);
@@ -70,11 +72,14 @@ function Login() {
       .then(async (cred) => {
         setLoading(false);
         const token = await cred.user.getIdToken();
-        const cookies = new Cookies();
-        cookies.set("session", token, { path: "/" });
-
+        fetch('/api/auth/login', {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({token})
+        })
         router.replace("/");
-        // console.log("user logged in:", cred.user);
       })
       .catch((err) => {
         setLoading(false);
@@ -92,13 +97,13 @@ function Login() {
       });
   };
 
-  // useEffect(() => {
-  //   onAuthStateChanged(auth, (user) => {
-  //     if (user) {
-  //       router.push("/");
-  //     }
-  //   });
-  // }, []);
+  useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        router.push("/");
+      }
+    });
+  }, []);
 
   return (
     <Grid alignItems="center" container mt={8} pt={4}>
@@ -242,4 +247,23 @@ function Login() {
   );
 }
 
-export default withPublic(Login);
+export default Login;
+
+
+export async function getServerSideProps({req, res}){
+  const sessionCookie = req.cookies.session || '';
+
+  if(sessionCookie){
+    return{
+      redirect:{
+        destination: '/',
+        permanent: false
+      },
+      props: {}
+    }
+  }
+
+  return{
+    props: {}
+  }
+}

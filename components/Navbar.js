@@ -81,8 +81,13 @@ export default function ButtonAppBar({ user }) {
     setOpen(false);
     signOut(auth)
       .then(() => {
-        const cookies = new Cookies();
-        cookies.remove("session", { path: "/" });
+        fetch('/api/auth/logout', {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({})
+        })
         router.replace("/auth/login");
       })
       .catch((err) => {
