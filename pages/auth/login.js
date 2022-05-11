@@ -21,7 +21,11 @@ import Head from "next/head";
 import { useEffect, useState } from "react";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useForm } from "react-hook-form";
-import { onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut,
+} from "firebase/auth";
 import { auth } from "../../firebase/ClientApp";
 import { useRouter } from "next/router";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -29,11 +33,10 @@ import { withPublic } from "../../hooks/auth";
 import Cookies from "universal-cookie";
 import Image from "next/image";
 import { grey } from "@mui/material/colors";
-import moment from 'moment'
+import moment from "moment";
 
 function Login() {
   const router = useRouter();
-  const [user, authLoading, authError] = useAuthState(auth);
 
   const {
     register,
@@ -72,13 +75,15 @@ function Login() {
       .then(async (cred) => {
         setLoading(false);
         const token = await cred.user.getIdToken();
-        fetch('/api/auth/login', {
-          method: 'post',
+        fetch("/api/auth/login", {
+          method: "post",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
-          body: JSON.stringify({token})
-        })
+          body: JSON.stringify({ token }),
+        }).then(() => {
+          router.replace("/");
+        });
       })
       .catch((err) => {
         setLoading(false);
@@ -97,9 +102,9 @@ function Login() {
   };
 
   useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        router.push("/");
+    onAuthStateChanged(auth, (cred) => {
+      if (cred) {
+        router.replace("/");
       }
     });
   }, []);
@@ -248,21 +253,20 @@ function Login() {
 
 export default Login;
 
+export async function getServerSideProps({ req, res }) {
+  const cookie = req.cookies.session || "";
 
-export async function getServerSideProps({req, res}){
-  const sessionCookie = req.cookies.session || '';
-
-  if(sessionCookie){
-    return{
-      redirect:{
-        destination: '/',
-        permanent: false
+  if (cookie) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
       },
-      props: {}
-    }
+      props: {},
+    };
   }
 
-  return{
-    props: {}
-  }
+  return {
+    props: { },
+  };
 }
