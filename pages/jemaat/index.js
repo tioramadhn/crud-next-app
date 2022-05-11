@@ -27,7 +27,7 @@ import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import FormControl from "@mui/material/FormControl";
-import { getAge } from "../../utils/date";
+import { dateFormatter, getAge } from "../../utils/date";
 import { jsPDF } from "jspdf";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import { red } from "@mui/material/colors";
@@ -46,7 +46,13 @@ const Item = styled(Paper)(({ theme }) => ({
   },
 }));
 
-export default function Jemaat({ data, dataAnak, dataRemaja, dataDewasa, dataLansia }) {
+export default function Jemaat({
+  data,
+  dataAnak,
+  dataRemaja,
+  dataDewasa,
+  dataLansia,
+}) {
   const router = useRouter();
 
   const [user, setUser] = useState(data);
@@ -60,6 +66,7 @@ export default function Jemaat({ data, dataAnak, dataRemaja, dataDewasa, dataLan
   const [filter, setFilter] = useState({
     kategori: "all",
   });
+  const [pdf, setPdf] = useState(false);
 
   useEffect(() => {
     if (key || filter.kategori != "all") {
@@ -70,28 +77,28 @@ export default function Jemaat({ data, dataAnak, dataRemaja, dataDewasa, dataLan
       }
 
       if (filter.kategori == "anak") {
-        result = dataAnak
+        result = dataAnak;
         if (key) {
           result = result.filter((i) => i.name.toLowerCase().indexOf(key) > -1);
         }
       }
 
       if (filter.kategori == "remaja") {
-        result = dataRemaja
+        result = dataRemaja;
         if (key) {
           result = result.filter((i) => i.name.toLowerCase().indexOf(key) > -1);
         }
       }
 
       if (filter.kategori == "dewasa") {
-        result = dataDewasa
+        result = dataDewasa;
         if (key) {
           result = result.filter((i) => i.name.toLowerCase().indexOf(key) > -1);
         }
       }
 
       if (filter.kategori == "lansia") {
-        result = dataLansia
+        result = dataLansia;
         if (key) {
           result = result.filter((i) => i.name.toLowerCase().indexOf(key) > -1);
         }
@@ -137,24 +144,33 @@ export default function Jemaat({ data, dataAnak, dataRemaja, dataDewasa, dataLan
   };
 
   const handlePdf = () => {
-    const doc = new jsPDF();
+    const doc = new jsPDF({format: 'legal', orientation: "landscape" });
     doc.setFontSize(22);
-    doc.text("BNKP EFRATA", 20, 20);
-
-    doc.setFontSize(16);
-    doc.text("Berikut adalah daftar jemaat", 20, 30);
+    doc.setFont('times', 'bold');
+    doc.text("DATA JEMAAT BNKP EFRATA", 180, 20, null, null, "center");
 
     var generateData = function (amount) {
       var result = [];
       var data = {};
       amount.forEach((value, idx) => {
         data.No = (idx + 1).toString();
-        data.Stambuk = value.numStambuk;
         data.Nama = value.name;
-        data.Keanggotaan = value.status;
+        data.Stambuk = value.numStambuk;
+        data.NIK = value.nik;
+        data.TTL = `${value.birthPlace}, ${dateFormatter(value.birthDate)}`;
+        data.Alamat = value.address
+        data.Usia = getAge(value.birthDate).toString()
+        data.Gender = value.gender
+        data.OrangTua = `${value.fatherName} / ${value.motherName}`
         data.Status = value.isMarried;
+        data.Keanggotaan = value.status;
+        data.Baptis = dateFormatter(value.baptisAt);
+        data.Sidi = dateFormatter(value.sidiAt);
+        data.Sektor = value.sector;
+        data.Register = dateFormatter(value.registerAt);
         result.push(Object.assign({}, data));
       });
+
       // console.log(result)
       return result;
     };
@@ -166,7 +182,7 @@ export default function Jemaat({ data, dataAnak, dataRemaja, dataDewasa, dataLan
           id: keys[i],
           name: keys[i],
           prompt: keys[i],
-          width: 65,
+          width: 30,
           align: "center",
           padding: 0,
         });
@@ -176,14 +192,24 @@ export default function Jemaat({ data, dataAnak, dataRemaja, dataDewasa, dataLan
 
     var headers = createHeaders([
       "No",
-      "Stambuk",
       "Nama",
-      "Keanggotaan",
+      "Stambuk",
+      "NIK",
+      "TTL",
+      "Alamat",
+      "Usia",
+      "Gender",
+      "OrangTua",
       "Status",
+      "Keanggotaan",
+      "Baptis",
+      "Sidi",
+      "Sektor",
+      "Register",
     ]);
-
-    doc.table(20, 40, generateData(search || user), headers, {
+    doc.table(5, 30, generateData(search || user), headers, {
       autoSize: true,
+      fontSize: 7,
     });
 
     doc.save("efrata_jemaat.pdf");
@@ -312,7 +338,7 @@ export default function Jemaat({ data, dataAnak, dataRemaja, dataDewasa, dataLan
         ) : search ? (
           search.map((item) => (
             <Grid item xs={12} md={6} lg={3} key={item.id}>
-               <Link href={`/jemaat/${item.id}`} prefetch={false} passHref>
+              <Link href={`/jemaat/${item.id}`} prefetch={false} passHref>
                 <Item elevation={0}>
                   <Stack direction="row" spacing={2} alignItems="center">
                     {foto[item.id] ? (
@@ -398,8 +424,12 @@ export async function getServerSideProps({ req, res }) {
   });
 
   const dataAnak = data.filter((i) => getAge(i.birthDate) <= 12);
-  const dataRemaja = data.filter((i) => getAge(i.birthDate) > 12 && getAge(i.birthDate) <= 18);
-  const dataDewasa = data.filter((i) => getAge(i.birthDate) > 18 && getAge(i.birthDate) <= 60);
+  const dataRemaja = data.filter(
+    (i) => getAge(i.birthDate) > 12 && getAge(i.birthDate) <= 18
+  );
+  const dataDewasa = data.filter(
+    (i) => getAge(i.birthDate) > 18 && getAge(i.birthDate) <= 60
+  );
   const dataLansia = data.filter((i) => getAge(i.birthDate) > 60);
 
   return {
