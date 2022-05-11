@@ -29,7 +29,7 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import FormControl from "@mui/material/FormControl";
 import { getAge } from "../../utils/date";
 import { jsPDF } from "jspdf";
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import { red } from "@mui/material/colors";
 
 const Item = styled(Paper)(({ theme }) => ({
@@ -46,7 +46,7 @@ const Item = styled(Paper)(({ theme }) => ({
   },
 }));
 
-export default function Jemaat({ data }) {
+export default function Jemaat({ data, dataAnak, dataRemaja, dataDewasa, dataLansia }) {
   const router = useRouter();
 
   const [user, setUser] = useState(data);
@@ -70,32 +70,28 @@ export default function Jemaat({ data }) {
       }
 
       if (filter.kategori == "anak") {
-        result = user.filter((i) => getAge(i.birthDate) <= 12);
+        result = dataAnak
         if (key) {
           result = result.filter((i) => i.name.toLowerCase().indexOf(key) > -1);
         }
       }
 
       if (filter.kategori == "remaja") {
-        result = user.filter(
-          (i) => getAge(i.birthDate) > 12 && getAge(i.birthDate) <= 18
-        );
+        result = dataRemaja
         if (key) {
           result = result.filter((i) => i.name.toLowerCase().indexOf(key) > -1);
         }
       }
 
       if (filter.kategori == "dewasa") {
-        result = user.filter(
-          (i) => getAge(i.birthDate) > 18 && getAge(i.birthDate) <= 60
-        );
+        result = dataDewasa
         if (key) {
           result = result.filter((i) => i.name.toLowerCase().indexOf(key) > -1);
         }
       }
 
       if (filter.kategori == "lansia") {
-        result = user.filter((i) => getAge(i.birthDate) > 60);
+        result = dataLansia
         if (key) {
           result = result.filter((i) => i.name.toLowerCase().indexOf(key) > -1);
         }
@@ -144,28 +140,25 @@ export default function Jemaat({ data }) {
     const doc = new jsPDF();
     doc.setFontSize(22);
     doc.text("BNKP EFRATA", 20, 20);
-    
+
     doc.setFontSize(16);
     doc.text("Berikut adalah daftar jemaat", 20, 30);
 
-    var generateData = function(amount) {
+    var generateData = function (amount) {
       var result = [];
-      var data = {
-        coin: "100",
-        game_group: "GameGroup",
-        game_name: "XPTO2",
-        game_version: "25",
-        machine: "20485861",
-        vlt: "0"
-      };
-      for (var i = 0; i < amount; i += 1) {
-        data.id = (i + 1).toString();
+      var data = {};
+      amount.forEach((value, idx) => {
+        data.No = (idx + 1).toString();
+        data.Stambuk = value.numStambuk;
+        data.Nama = value.name;
+        data.Keanggotaan = value.status;
+        data.Status = value.isMarried;
         result.push(Object.assign({}, data));
-      }
+      });
       // console.log(result)
       return result;
     };
-    
+
     function createHeaders(keys) {
       var result = [];
       for (var i = 0; i < keys.length; i += 1) {
@@ -175,26 +168,26 @@ export default function Jemaat({ data }) {
           prompt: keys[i],
           width: 65,
           align: "center",
-          padding: 0
+          padding: 0,
         });
       }
       return result;
     }
-    
+
     var headers = createHeaders([
-      "id",
-      "coin",
-      "game_group",
-      "game_name",
-      "game_version",
-      "machine",
-      "vlt"
+      "No",
+      "Stambuk",
+      "Nama",
+      "Keanggotaan",
+      "Status",
     ]);
 
-    doc.table(20,40, generateData(100), headers, { autoSize: true });
+    doc.table(20, 40, generateData(search || user), headers, {
+      autoSize: true,
+    });
 
-    doc.save("efrata_jemaat.pdf")
-  }
+    doc.save("efrata_jemaat.pdf");
+  };
 
   return (
     <div>
@@ -222,25 +215,24 @@ export default function Jemaat({ data }) {
 
           <Stack spacing={2}>
             <Stack spacing={2} direction="row">
-            <Button
-              sx={{ width: "max-content", height: "max-content" }}
-              onClick={() => setOpen(!open)}
-              endIcon={<FilterListIcon />}
-              variant="contained"
-            >
-              Filter By
-            </Button>
+              <Button
+                sx={{ width: "max-content", height: "max-content" }}
+                onClick={() => setOpen(!open)}
+                endIcon={<FilterListIcon />}
+                variant="contained"
+              >
+                Filter By
+              </Button>
 
-            <Button
-              sx={{ width: "max-content", height: "max-content" }}
-              onClick={() => handlePdf()}
-              endIcon={<PictureAsPdfIcon />}
-              variant="outlined"
-            >
-              Unduh PDF
-            </Button>
+              <Button
+                sx={{ width: "max-content", height: "max-content" }}
+                onClick={() => handlePdf()}
+                endIcon={<PictureAsPdfIcon />}
+                variant="outlined"
+              >
+                Unduh PDF
+              </Button>
             </Stack>
-           
 
             {open && (
               <FormControl>
@@ -286,7 +278,7 @@ export default function Jemaat({ data }) {
         {user && search == null ? (
           user.map((item) => (
             <Grid item xs={12} md={6} lg={3} key={item.id}>
-              <Link href={`/jemaat/${item.id}`} passHref>
+              <Link href={`/jemaat/${item.id}`} prefetch={false} passHref>
                 <Item elevation={0}>
                   <Stack direction="row" spacing={2} alignItems="center">
                     {foto[item.id] ? (
@@ -320,7 +312,7 @@ export default function Jemaat({ data }) {
         ) : search ? (
           search.map((item) => (
             <Grid item xs={12} md={6} lg={3} key={item.id}>
-              <Link href={`/jemaat/${item.id}`} passHref>
+               <Link href={`/jemaat/${item.id}`} prefetch={false} passHref>
                 <Item elevation={0}>
                   <Stack direction="row" spacing={2} alignItems="center">
                     {foto[item.id] ? (
@@ -399,14 +391,18 @@ export async function getServerSideProps({ req, res }) {
   const colRef = collection(db, "jemaat_users");
 
   let data = [];
-  let dataFoto = [];
   const querySnapshot = await getDocs(colRef);
   querySnapshot.forEach((doc) => {
     // doc.data() is never undefined for query doc snapshots
     data.push({ ...doc.data(), id: doc.id });
   });
 
+  const dataAnak = data.filter((i) => getAge(i.birthDate) <= 12);
+  const dataRemaja = data.filter((i) => getAge(i.birthDate) > 12 && getAge(i.birthDate) <= 18);
+  const dataDewasa = data.filter((i) => getAge(i.birthDate) > 18 && getAge(i.birthDate) <= 60);
+  const dataLansia = data.filter((i) => getAge(i.birthDate) > 60);
+
   return {
-    props: { data },
+    props: { data, dataAnak, dataRemaja, dataDewasa, dataLansia },
   };
 }
